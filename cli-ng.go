@@ -24,10 +24,10 @@ func main() {
 
 	// Global Flags
 	flags := struct {
-		Debug    bool   `short:"d" long:"debug" desc:"Show debugging information"`
-		NoColor  bool   `short:"N" long:"no-color" desc:"Disable coloring of output text"`
-		Yes      bool   `short:"y" long:"yes-all" desc:"assume yes in all yes/no queries"`
-		Verbose  bool   `short:"v" long:"verbose" desc:"Detailed output"`
+		Debug   bool `short:"d" long:"debug" desc:"Show debugging information"`
+		NoColor bool `short:"N" long:"no-color" desc:"Disable coloring of output text"`
+		Yes     bool `short:"y" long:"yes-all" desc:"assume yes in all yes/no queries"`
+		Verbose bool `short:"v" long:"verbose" desc:"Detailed output"`
 	}{}
 
 	// Build Application

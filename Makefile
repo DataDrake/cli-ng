@@ -7,6 +7,7 @@ GOBIN    = build/bin
 GOSRC    = build/src
 PROJROOT = $(GOSRC)/github.com/DataDrake
 PKGNAME  = cli-ng
+SUBPKGS  = cmd translate
 
 DESTDIR ?=
 PREFIX  ?= /usr
@@ -31,6 +32,8 @@ setup:
 	@if [ ! -d $(PROJROOT)/$(PKGNAME) ]; then ln -s $(shell pwd) $(PROJROOT)/$(PKGNAME); fi
 	@$(call task,Getting dependencies...)
 	@$(GOCC) get github.com/DataDrake/waterlog
+	@$(GOCC) get github.com/leonelquinteros/gotext
+	@cd $(GOPATH)/src/github.com/leonelquinteros/gotext && git checkout -q v1.2.0
 	@$(call pass,SETUP)
 
 validate: golint-setup
@@ -38,10 +41,10 @@ validate: golint-setup
 	@$(GOCC) fmt -x ./...
 	@$(call pass,FORMAT)
 	@$(call stage,VET)
-	@$(GOCC) vet -x ./...
+	@$(GOCC) vet -x ./$(PROJROOT)/...
 	@$(call pass,VET)
 	@$(call stage,LINT)
-	@$(GOBIN)/golint -set_exit_status ./...
+	@for d in $(SUBPKGS); do $(GOBIN)/golint -set_exit_status ./$$d; done
 	@$(call pass,LINT)
 
 golint-setup:

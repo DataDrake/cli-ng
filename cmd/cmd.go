@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/DataDrake/cli-ng/translate"
 	"reflect"
 	"strconv"
 )
@@ -17,7 +18,7 @@ type CMD struct {
 
 // Usage prints a general usage statement
 func Usage(r *RootCMD, c *CMD) {
-	fmt.Printf("USAGE: %s %s [OPTIONS]", r.Name, c.Name)
+	translate.Printf("SUBCOMMAND USAGE", r.Name, c.Name)
 	t := reflect.TypeOf(c.Args)
 	max := 0
 	for i := 0; i < t.NumField(); i++ {
@@ -28,16 +29,19 @@ func Usage(r *RootCMD, c *CMD) {
 		}
 	}
 	print("\n\n")
-	fmt.Printf("DESCRIPTION: %s\n\n", c.Short)
+	translate.Printf("DESCRIPTION", c.Short)
+	print("\n\n")
 	if t.NumField() > 0 {
-		print("ARGUMENTS:\n\n")
+		translate.Printf("ARGUMENTS")
+		print("\n\n")
 		for i := 0; i < t.NumField(); i++ {
 			fmt.Printf("%"+strconv.Itoa(max+4)+"s : %s\n", t.Field(i).Name, t.Field(i).Tag.Get("desc"))
 		}
 		print("\n")
 	}
 	if r.Flags != nil {
-		print("GLOBAL FLAGS:\n\n")
+		translate.Printf("GLOBAL FLAGS")
+		print("\n\n")
 		PrintFlags(r.Flags)
 	}
 }

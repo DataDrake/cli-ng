@@ -3,6 +3,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
+	"github.com/DataDrake/cli-ng/translate"
 	"os"
 	"reflect"
 	"sort"
@@ -35,11 +36,14 @@ func (r *RootCMD) RegisterCMD(c *CMD) {
 
 // Usage prints the usage for this program
 func (r *RootCMD) Usage() {
-	fmt.Printf("USAGE: %s CMD [OPTIONS] <ARGS>\n\n", r.Name)
+	translate.Printf("ROOT USAGE", r.Name)
+	print("\n\n")
 	if len(r.Short) > 0 {
-		fmt.Printf("DESCRIPTION: %s\n\n", r.Short)
+		translate.Printf("DESCRIPTION", r.Short)
+		print("\n\n")
 	}
-	print("COMMANDS:\n\n")
+	translate.Printf("COMMANDS")
+	print("\n\n")
 	var keys []string
 	i := -1
 	for k := range r.Subcommands {
@@ -55,7 +59,8 @@ func (r *RootCMD) Usage() {
 	}
 	print("\n")
 	if r.Flags != nil {
-		print("GLOBAL FLAGS:\n\n")
+		translate.Printf("GLOBAL FLAGS")
+		print("\n\n")
 		PrintFlags(r.Flags)
 	}
 	os.Exit(1)
