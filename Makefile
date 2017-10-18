@@ -7,7 +7,7 @@ GOBIN    = build/bin
 GOSRC    = build/src
 PROJROOT = $(GOSRC)/github.com/DataDrake
 PKGNAME  = cli-ng
-SUBPKGS  = cmd translate
+SUBPKGS  = cmd options translate
 
 DESTDIR ?=
 PREFIX  ?= /usr
@@ -31,20 +31,23 @@ setup:
 	@$(call task,Setting up symlinks...)
 	@if [ ! -d $(PROJROOT)/$(PKGNAME) ]; then ln -s $(shell pwd) $(PROJROOT)/$(PKGNAME); fi
 	@$(call task,Getting dependencies...)
-	@$(GOCC) get github.com/DataDrake/waterlog
-	@$(GOCC) get github.com/leonelquinteros/gotext
-	@cd $(GOPATH)/src/github.com/leonelquinteros/gotext && git checkout -q v1.2.0
+	@$(GOCC) get -u github.com/leonelquinteros/gotext
 	@$(call pass,SETUP)
+
+test: build
+	@$(call stage,TEST)
+	@for d in $(SUBPKGS); do $(GOCC) test -cover ./$$d/... || exit 1; done
+	@$(call pass,TEST)
 
 validate: golint-setup
 	@$(call stage,FORMAT)
-	@$(GOCC) fmt -x ./...
+	@for d in $(SUBPKGS); do $(GOCC) fmt -x ./$$d/...|| exit 1; done || $(GOCC) fmt -x $(PKGNAME).go
 	@$(call pass,FORMAT)
 	@$(call stage,VET)
-	@$(GOCC) vet -x ./$(PROJROOT)/...
+	@for d in $(SUBPKGS); do $(GOCC) vet -x ./$$d/...|| exit 1; done || $(GOCC) vet -x $(PKGNAME).go
 	@$(call pass,VET)
 	@$(call stage,LINT)
-	@for d in $(SUBPKGS); do $(GOBIN)/golint -set_exit_status ./$$d; done
+	@for d in $(SUBPKGS); do $(GOBIN)/golint -set_exit_status ./$$d/... || exit 1; done || $(GOBIN)/golint -set_exit_status $(PKGNAME).go || exit 1;
 	@$(call pass,LINT)
 
 golint-setup:

@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
+	"github.com/DataDrake/cli-ng/options"
 	"github.com/DataDrake/cli-ng/translate"
 	"os"
-	"reflect"
 	"sort"
 	"strconv"
 )
@@ -68,24 +67,35 @@ func (r *RootCMD) Usage() {
 
 // Run finds the appropriate CMD and executes it, or prints the global Usage
 func (r *RootCMD) Run() {
-	flag.Parse()
-	if flag.NArg() == 0 {
+	if len(os.Args) < 2 {
 		r.Usage()
 		os.Exit(1)
 	}
+	// Get the subcommand if it exists
 	c := r.Subcommands[os.Args[1]]
 	if c == nil {
+		// Try to get the subcommand by alias if it not found as a normal name
 		if alias := r.Aliases[os.Args[1]]; alias != "" {
 			c = r.Subcommands[alias]
 		}
+		if c == nil {
+			r.Usage()
+			os.Exit(1)
+		}
 	}
-	if c == nil {
-		r.Usage()
-		os.Exit(1)
-	}
-	if flag.NArg() != (reflect.TypeOf(c.Args).NumField() + 1) {
-		Usage(r, c)
-		os.Exit(1)
+	if len(os.Args) > 2 {
+		raw := make([]string, 0)
+		copy(raw, os.Args[2:])
+		p := options.NewParser(raw)
+		// Handle any flags for the RootCMD
+		p.SetFlags(&r.Flags)
+		// Not yet supported
+		//p.SubFlags(c)
+		// Handle the arguments for the subcommand
+		if !p.SetArgs(c) {
+            Usage(r,c)
+            os.Exit(1)
+        }
 	}
 	c.Run(r, c)
 }

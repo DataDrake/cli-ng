@@ -17,7 +17,6 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 	"os"
 )
@@ -33,21 +32,22 @@ var Help = CMD{
 
 // HelpArgs contains the arguments for the "help" subcommand
 var HelpArgs = struct {
-	subcommand string `desc:"Command to get help for"`
+	Subcommand string `desc:"Command to get help for"`
 }{}
 
 // HelpRun prints the usage for the requested command
 func HelpRun(r *RootCMD, c *CMD) {
 
-	sub := r.Subcommands[flag.Arg(1)]
+	sub := r.Subcommands[HelpArgs.Subcommand]
 	if sub == nil {
-		alias := r.Aliases[flag.Arg(1)]
+		alias := r.Aliases[HelpArgs.Subcommand]
 		if alias != "" {
 			sub = r.Subcommands[alias]
 		}
 	}
 	if sub == nil {
-		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", flag.Arg(1))
+		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", HelpArgs.Subcommand)
+        Usage(r,c)
 		os.Exit(1)
 	}
 	Usage(r, sub)
