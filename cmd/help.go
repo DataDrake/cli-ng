@@ -21,32 +21,35 @@ import (
 	"os"
 )
 
+
 // Help fulfills the "help" subcommand
 var Help = CMD{
 	Name:  "help",
 	Alias: "?",
 	Short: "Get help with a specific subcommand",
-	Args:  HelpArgs,
+	Args:  &HelpArgs{},
 	Run:   HelpRun,
 }
 
 // HelpArgs contains the arguments for the "help" subcommand
-var HelpArgs = struct {
+type HelpArgs struct {
 	Subcommand string `desc:"Command to get help for"`
-}{}
+}
 
 // HelpRun prints the usage for the requested command
 func HelpRun(r *RootCMD, c *CMD) {
 
-	sub := r.Subcommands[HelpArgs.Subcommand]
+    args := c.Args.(*HelpArgs)
+
+	sub := r.Subcommands[args.Subcommand]
 	if sub == nil {
-		alias := r.Aliases[HelpArgs.Subcommand]
+		alias := r.Aliases[args.Subcommand]
 		if alias != "" {
 			sub = r.Subcommands[alias]
 		}
 	}
 	if sub == nil {
-		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", HelpArgs.Subcommand)
+		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", args.Subcommand)
         Usage(r,c)
 		os.Exit(1)
 	}

@@ -31,8 +31,8 @@ type Parser struct {
 }
 
 // NewParser does the initial parsing of arguments and returns the resulting Parser
-func NewParser(raw []string) *Parser {
-	p := &Parser{make(map[string]Flag), make([]string, 0)}
+func NewParser(raw []string) (p *Parser, sub string) {
+	p = &Parser{make(map[string]Flag), make([]string, 0)}
 	flagsDone := false
 	i := 0
 	for i < len(raw) {
@@ -41,36 +41,41 @@ func NewParser(raw []string) *Parser {
 			p.args = append(p.args, raw[i])
 			i++
 		case strings.HasPrefix(raw[i], "--"):
-			if (i+1) < len(raw) && !strings.HasPrefix(raw[i+1], "-") {
-				p.flags[strings.TrimPrefix(raw[i], "--")] = Flag{Long, raw[i+1]}
-				i += 2
+            pieces := strings.Split(raw[i], "=")
+            if len(pieces) == 1 {
+				p.flags[strings.TrimPrefix(pieces[0], "--")] = Flag{Long, ""}
 			} else {
-				p.flags[strings.TrimPrefix(raw[i], "--")] = Flag{Long, ""}
-				i++
+				p.flags[strings.TrimPrefix(pieces[0], "--")] = Flag{Long, pieces[1]}
 			}
+            i++
 		case strings.HasPrefix(raw[i], "-"):
-			if (i+1) < len(raw) && !strings.HasPrefix(raw[i+1], "-") {
-				p.flags[strings.TrimPrefix(raw[i], "-")] = Flag{Short, raw[i+1]}
-				i += 2
+            pieces := strings.Split(raw[i], "=")
+            if len(pieces) == 1 {
+				p.flags[strings.TrimPrefix(pieces[0], "-")] = Flag{Short, ""}
 			} else {
-				p.flags[strings.TrimPrefix(raw[i], "-")] = Flag{Short, ""}
-				i++
+				p.flags[strings.TrimPrefix(pieces[0], "-")] = Flag{Short, pieces[1]}
 			}
+            i++
 		default:
 			flagsDone = true
 		}
 	}
-	return p
+    if len(p.args) == 0 {
+        return
+    }
+    sub = p.args[0]
+    p.args = p.args[1:]
+	return
 }
 
 // SetFlags attempts to set the entries in 'flags', using the previously parsed arguments
 func (p *Parser) SetFlags(flags interface{}) {
 	flagsElement := reflect.ValueOf(flags).Elem()
 	flagsType := flagsElement.Type()
-	for i := 0; i < flagsType.NumField(); i++ {
+	for i := 0; i < flagsElement.NumField(); i++ {
 		typeField := flagsType.Field(i)
 		elementField := flagsElement.Field(i)
-		deletion := ""
+		var deletion string
 		for k, v := range p.flags {
 			if k == typeField.Tag.Get(v.kind) && elementField.CanSet() {
 				var err error
@@ -115,7 +120,7 @@ func (p *Parser) SetArgs(args interface{}) bool {
 	argsElement := reflect.ValueOf(args).Elem()
     if len(p.flags) > 0 {
         for name, flag := range p.flags {
-            fmt.Fprintf(os.Stderr, "Unrecognized flag '%s' with argument '%s'", name, flag.value)
+            fmt.Fprintf(os.Stderr, "Unrecognized flag '%s' with argument '%s'\n", name, flag.value)
         }
         return false
     }

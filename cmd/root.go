@@ -71,31 +71,31 @@ func (r *RootCMD) Run() {
 		r.Usage()
 		os.Exit(1)
 	}
-	// Get the subcommand if it exists
-	c := r.Subcommands[os.Args[1]]
-	if c == nil {
-		// Try to get the subcommand by alias if it not found as a normal name
-		if alias := r.Aliases[os.Args[1]]; alias != "" {
-			c = r.Subcommands[alias]
-		}
-		if c == nil {
-			r.Usage()
-			os.Exit(1)
-		}
-	}
-	if len(os.Args) > 2 {
-		raw := make([]string, 0)
-		copy(raw, os.Args[2:])
-		p := options.NewParser(raw)
-		// Handle any flags for the RootCMD
-		p.SetFlags(&r.Flags)
-		// Not yet supported
-		//p.SubFlags(c)
-		// Handle the arguments for the subcommand
-		if !p.SetArgs(c) {
-            Usage(r,c)
-            os.Exit(1)
-        }
-	}
-	c.Run(r, c)
+	p, sub := options.NewParser(os.Args[1:])
+    if sub == "" {
+        r.Usage()
+        os.Exit(1)
+    }
+   	// Get the subcommand if it exists
+    c := r.Subcommands[sub]
+    if c == nil {
+	    // Try to get the subcommand by alias if it not found as a normal name
+	    if alias := r.Aliases[sub]; alias != "" {
+		    c = r.Subcommands[alias]
+	    }
+	    if c == nil {
+		    r.Usage()
+		    os.Exit(1)
+	    }
+    }
+	// Handle any flags for the RootCMD
+	p.SetFlags(r.Flags)
+	// Not yet supported
+	//p.SubFlags(c)
+	// Handle the arguments for the subcommand
+	if !p.SetArgs(c.Args) {
+        Usage(r,c)
+        os.Exit(1)
+    }
+  	c.Run(r, c)
 }

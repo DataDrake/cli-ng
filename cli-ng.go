@@ -34,7 +34,7 @@ func main() {
 	r := &cmd.RootCMD{
 		Name:  "cli-ng",
 		Short: "An easy to use CLI library for the Go language",
-		Flags: flags,
+		Flags: &flags,
 	}
 
 	// Setup the Sub-Commands

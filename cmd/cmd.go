@@ -19,7 +19,7 @@ type CMD struct {
 // Usage prints a general usage statement
 func Usage(r *RootCMD, c *CMD) {
 	translate.Printf("SUBCOMMAND USAGE", r.Name, c.Name)
-	t := reflect.TypeOf(c.Args)
+	t := reflect.TypeOf(c.Args).Elem()
 	max := 0
 	for i := 0; i < t.NumField(); i++ {
 		name := t.Field(i).Name

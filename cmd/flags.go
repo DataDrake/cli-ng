@@ -8,7 +8,7 @@ import (
 
 // PrintFlags writes out the flags in a struct
 func PrintFlags(flags interface{}) {
-	t := reflect.TypeOf(flags)
+	t := reflect.TypeOf(flags).Elem()
 	if t.NumField() > 0 {
 		max := 0
 		for i := 0; i < t.NumField(); i++ {
