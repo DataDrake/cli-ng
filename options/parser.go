@@ -17,8 +17,8 @@
 package options
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -41,30 +41,30 @@ func NewParser(raw []string) (p *Parser, sub string) {
 			p.args = append(p.args, raw[i])
 			i++
 		case strings.HasPrefix(raw[i], "--"):
-            pieces := strings.Split(raw[i], "=")
-            if len(pieces) == 1 {
+			pieces := strings.Split(raw[i], "=")
+			if len(pieces) == 1 {
 				p.flags[strings.TrimPrefix(pieces[0], "--")] = Flag{Long, ""}
 			} else {
 				p.flags[strings.TrimPrefix(pieces[0], "--")] = Flag{Long, pieces[1]}
 			}
-            i++
+			i++
 		case strings.HasPrefix(raw[i], "-"):
-            pieces := strings.Split(raw[i], "=")
-            if len(pieces) == 1 {
+			pieces := strings.Split(raw[i], "=")
+			if len(pieces) == 1 {
 				p.flags[strings.TrimPrefix(pieces[0], "-")] = Flag{Short, ""}
 			} else {
 				p.flags[strings.TrimPrefix(pieces[0], "-")] = Flag{Short, pieces[1]}
 			}
-            i++
+			i++
 		default:
 			flagsDone = true
 		}
 	}
-    if len(p.args) == 0 {
-        return
-    }
-    sub = p.args[0]
-    p.args = p.args[1:]
+	if len(p.args) == 0 {
+		return
+	}
+	sub = p.args[0]
+	p.args = p.args[1:]
 	return
 }
 
@@ -100,7 +100,7 @@ func (p *Parser) SetFlags(flags interface{}) {
 						elementField.SetFloat(f)
 					}
 				default:
-					panic("[cli-ng] Unsupported flag type: " + elementField.Kind().String() )
+					panic("[cli-ng] Unsupported flag type: " + elementField.Kind().String())
 				}
 				if err != nil {
 					panic("Failed to parse flag '" + k + "', reason: " + err.Error())
@@ -118,15 +118,15 @@ func (p *Parser) SetFlags(flags interface{}) {
 // SetArgs attempts to set the entries in 'args', using the previously parsed arguments
 func (p *Parser) SetArgs(args interface{}) bool {
 	argsElement := reflect.ValueOf(args).Elem()
-    if len(p.flags) > 0 {
-        for name, flag := range p.flags {
-            fmt.Fprintf(os.Stderr, "Unrecognized flag '%s' with argument '%s'\n", name, flag.value)
-        }
-        return false
-    }
-    if len(p.args) != argsElement.NumField() {
-        return false
-    }
+	if len(p.flags) > 0 {
+		for name, flag := range p.flags {
+			fmt.Fprintf(os.Stderr, "Unrecognized flag '%s' with argument '%s'\n", name, flag.value)
+		}
+		return false
+	}
+	if len(p.args) != argsElement.NumField() {
+		return false
+	}
 	for i := 0; i < argsElement.NumField(); i++ {
 		elementField := argsElement.Field(i)
 		for _, v := range p.args {
@@ -153,16 +153,16 @@ func (p *Parser) SetArgs(args interface{}) bool {
 						elementField.SetFloat(f)
 					}
 				default:
-					panic("[cli-ng] Unsupported arg type: " + elementField.Kind().String() )
+					panic("[cli-ng] Unsupported arg type: " + elementField.Kind().String())
 				}
 				if err != nil {
 					panic("Failed to parse arg '" + elementField.String() + "', reason: " + err.Error())
 				}
 				break
-            } else {
-					panic("[cli-ng] arg '" + elementField.String() + "' must be public" )
+			} else {
+				panic("[cli-ng] arg '" + elementField.String() + "' must be public")
 			}
 		}
 	}
-    return true
+	return true
 }

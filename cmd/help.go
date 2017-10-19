@@ -21,7 +21,6 @@ import (
 	"os"
 )
 
-
 // Help fulfills the "help" subcommand
 var Help = CMD{
 	Name:  "help",
@@ -39,7 +38,7 @@ type HelpArgs struct {
 // HelpRun prints the usage for the requested command
 func HelpRun(r *RootCMD, c *CMD) {
 
-    args := c.Args.(*HelpArgs)
+	args := c.Args.(*HelpArgs)
 
 	sub := r.Subcommands[args.Subcommand]
 	if sub == nil {
@@ -50,7 +49,7 @@ func HelpRun(r *RootCMD, c *CMD) {
 	}
 	if sub == nil {
 		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", args.Subcommand)
-        Usage(r,c)
+		Usage(r, c)
 		os.Exit(1)
 	}
 	Usage(r, sub)
