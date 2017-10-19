@@ -6,10 +6,10 @@ import (
 
 var enUS = `
 msgid "ROOT USAGE"
-msgstr "USAGE: %s CMD [OPTIONS] <ARGS>"
+msgstr "USAGE: %s CMD [OPTIONS]"
 
 msgid "SUBCOMMAND USAGE"
-msgstr "USAGE: %s %s [OPTIONS] <ARGS>"
+msgstr "USAGE: %s %s [OPTIONS]"
 
 msgid "DESCRIPTION"
 msgstr "DESCRIPTION: %s"
