@@ -85,19 +85,25 @@ func (p *Parser) SetFlags(flags interface{}) {
 				case reflect.String:
 					elementField.SetString(v.value)
 				case reflect.Int64:
-					i, err := strconv.ParseInt(v.value, 10, 64)
-					if err != nil {
+					i, e := strconv.ParseInt(v.value, 10, 64)
+					if e == nil {
 						elementField.SetInt(i)
+					} else {
+						err = e
 					}
 				case reflect.Uint64:
-					u, err := strconv.ParseUint(v.value, 10, 64)
-					if err != nil {
+					u, e := strconv.ParseUint(v.value, 10, 64)
+					if e == nil {
 						elementField.SetUint(u)
+					} else {
+						err = e
 					}
 				case reflect.Float64:
-					f, err := strconv.ParseFloat(v.value, 64)
-					if err != nil {
+					f, e := strconv.ParseFloat(v.value, 64)
+					if e == nil {
 						elementField.SetFloat(f)
+					} else {
+						err = e
 					}
 				default:
 					panic("[cli-ng] Unsupported flag type: " + elementField.Kind().String())
@@ -138,19 +144,25 @@ func (p *Parser) SetArgs(args interface{}) bool {
 				case reflect.String:
 					elementField.SetString(v)
 				case reflect.Int64:
-					i, err := strconv.ParseInt(v, 10, 64)
-					if err != nil {
+					i, e := strconv.ParseInt(v, 10, 64)
+					if e == nil {
 						elementField.SetInt(i)
+					} else {
+						err = e
 					}
 				case reflect.Uint64:
-					u, err := strconv.ParseUint(v, 10, 64)
-					if err != nil {
+					u, e := strconv.ParseUint(v, 10, 64)
+					if e == nil {
 						elementField.SetUint(u)
+					} else {
+						err = e
 					}
 				case reflect.Float64:
-					f, err := strconv.ParseFloat(v, 64)
-					if err != nil {
+					f, e := strconv.ParseFloat(v, 64)
+					if e == nil {
 						elementField.SetFloat(f)
+					} else {
+						err = e
 					}
 				default:
 					panic("[cli-ng] Unsupported arg type: " + elementField.Kind().String())
