@@ -32,9 +32,13 @@ type Parser struct {
 
 // NewParser does the initial parsing of arguments and returns the resulting Parser
 func NewParser(raw []string) (p *Parser, sub string) {
+	if len(raw) < 1 {
+		panic("Must use a subcommand")
+	}
 	p = &Parser{make(map[string]Flag), make([]string, 0)}
+	p.args = append(p.args, raw[0])
 	flagsDone := false
-	i := 0
+	i := 1
 	for i < len(raw) {
 		switch {
 		case flagsDone:
