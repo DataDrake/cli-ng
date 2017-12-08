@@ -36,14 +36,10 @@ func NewParser(raw []string) (p *Parser, sub string) {
 		panic("Must use a subcommand")
 	}
 	p = &Parser{make(map[string]Flag), make([]string, 0)}
-	p.args = append(p.args, raw[0])
-	flagsDone := false
+	sub = raw[0]
 	i := 1
 	for i < len(raw) {
 		switch {
-		case flagsDone:
-			p.args = append(p.args, raw[i])
-			i++
 		case strings.HasPrefix(raw[i], "--"):
 			pieces := strings.Split(raw[i], "=")
 			if len(pieces) == 1 {
@@ -61,14 +57,12 @@ func NewParser(raw []string) (p *Parser, sub string) {
 			}
 			i++
 		default:
-			flagsDone = true
+            goto END
 		}
 	}
-	if len(p.args) == 0 {
-		return
-	}
-	sub = p.args[0]
-	p.args = p.args[1:]
+END:if i < len(raw) {
+        p.args = append(p.args, raw[i:]...)
+    }
 	return
 }
 
