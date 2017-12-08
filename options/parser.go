@@ -57,12 +57,13 @@ func NewParser(raw []string) (p *Parser, sub string) {
 			}
 			i++
 		default:
-            goto END
+			goto END
 		}
 	}
-END:if i < len(raw) {
-        p.args = append(p.args, raw[i:]...)
-    }
+END:
+	if i < len(raw) {
+		p.args = append(p.args, raw[i:]...)
+	}
 	return
 }
 
@@ -133,45 +134,43 @@ func (p *Parser) SetArgs(args interface{}) bool {
 	}
 	for i := 0; i < argsElement.NumField(); i++ {
 		elementField := argsElement.Field(i)
-		for _, v := range p.args {
-			if elementField.CanSet() {
-				var err error
-				switch elementField.Kind() {
-				case reflect.Bool:
-					elementField.SetBool(true)
-				case reflect.String:
-					elementField.SetString(v)
-				case reflect.Int64:
-					i, e := strconv.ParseInt(v, 10, 64)
-					if e == nil {
-						elementField.SetInt(i)
-					} else {
-						err = e
-					}
-				case reflect.Uint64:
-					u, e := strconv.ParseUint(v, 10, 64)
-					if e == nil {
-						elementField.SetUint(u)
-					} else {
-						err = e
-					}
-				case reflect.Float64:
-					f, e := strconv.ParseFloat(v, 64)
-					if e == nil {
-						elementField.SetFloat(f)
-					} else {
-						err = e
-					}
-				default:
-					panic("[cli-ng] Unsupported arg type: " + elementField.Kind().String())
+		v := p.args[i]
+		if elementField.CanSet() {
+			var err error
+			switch elementField.Kind() {
+			case reflect.Bool:
+				elementField.SetBool(true)
+			case reflect.String:
+				elementField.SetString(v)
+			case reflect.Int64:
+				i, e := strconv.ParseInt(v, 10, 64)
+				if e == nil {
+					elementField.SetInt(i)
+				} else {
+					err = e
 				}
-				if err != nil {
-					panic("Failed to parse arg '" + elementField.String() + "', reason: " + err.Error())
+			case reflect.Uint64:
+				u, e := strconv.ParseUint(v, 10, 64)
+				if e == nil {
+					elementField.SetUint(u)
+				} else {
+					err = e
 				}
-				break
-			} else {
-				panic("[cli-ng] arg '" + elementField.String() + "' must be public")
+			case reflect.Float64:
+				f, e := strconv.ParseFloat(v, 64)
+				if e == nil {
+					elementField.SetFloat(f)
+				} else {
+					err = e
+				}
+			default:
+				panic("[cli-ng] Unsupported arg type: " + elementField.Kind().String())
 			}
+			if err != nil {
+				panic("Failed to parse arg '" + elementField.String() + "', reason: " + err.Error())
+			}
+		} else {
+			panic("[cli-ng] arg '" + elementField.String() + "' must be public")
 		}
 	}
 	return true
