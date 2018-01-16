@@ -31,7 +31,7 @@ setup:
 	@$(call task,Setting up symlinks...)
 	@if [ ! -d $(PROJROOT)/$(PKGNAME) ]; then ln -s $(shell pwd) $(PROJROOT)/$(PKGNAME); fi
 	@$(call task,Getting dependencies...)
-	@$(GOCC) get -u github.com/leonelquinteros/gotext
+	@git submodule update
 	@$(call pass,SETUP)
 
 test: build

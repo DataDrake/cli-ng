@@ -1,0 +1,3 @@
+[submodule "gotext"]
+	path = vendor/github.com/leonelquinteros/gotext
+	url = https://github.com/leonelquinteros/gotext
