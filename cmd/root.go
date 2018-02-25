@@ -71,10 +71,11 @@ func (r *RootCMD) Usage() {
 			maxAlias = len(cmd.Alias)
 		}
 	}
+    maxAlias +=2
 	sort.Strings(keys)
-	format := "    %" + strconv.Itoa(maxKey) + "s (%" + strconv.Itoa(maxAlias) + "s) : %s\n"
+	format := "    %" + strconv.Itoa(maxKey) + "s %" + strconv.Itoa(maxAlias) + "s : %s\n"
 	for _, k := range keys {
-		fmt.Printf(format, k, r.Subcommands[k].Alias, r.Subcommands[k].Short)
+		fmt.Printf(format, k, "(" + r.Subcommands[k].Alias + ")", r.Subcommands[k].Short)
 	}
 	print("\n")
 	if r.Flags != nil {
