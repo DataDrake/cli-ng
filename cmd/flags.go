@@ -26,24 +26,41 @@ import (
 func PrintFlags(flags interface{}) {
 	t := reflect.TypeOf(flags).Elem()
 	if t.NumField() > 0 {
-		max := 0
+		maxArg := 0
+		maxLong := 0
+		maxShort := 0
 		for i := 0; i < t.NumField(); i++ {
-			if long := t.Field(i).Tag.Get("long"); len(long) > max {
-				max = len(long)
+			if t.Field(i).Tag.Get("arg") != "" {
+				maxArg = 4
+			}
+			if long := len(t.Field(i).Tag.Get("long")); long > maxLong {
+				maxLong = long
+			}
+			if short := len(t.Field(i).Tag.Get("short")); short > maxShort {
+				maxShort = short
 			}
 		}
+		//formatLong := "    -%" + strconv.Itoa(maxShort) + "s, %" + strconv.Itoa(maxLong) + "s%" + strconv.Itoa(maxArg) + "s : %s\n"
+		//formatShort := "     %" + strconv.Itoa(maxShort+maxLong+4) + "s %" + strconv.Itoa(maxArg) + "s : %s\n"
 		for i := 0; i < t.NumField(); i++ {
 			short := t.Field(i).Tag.Get("short")
 			long := t.Field(i).Tag.Get("long")
 			arg := t.Field(i).Tag.Get("arg")
 			desc := t.Field(i).Tag.Get("desc")
-			if arg == "true" {
-				arg = "arg"
-			}
+            format := " : %s\n"
+            if maxArg > 0 {
+			    if arg == "true" {
+				    format = " arg" + format
+			    } else {
+                    format = "    " + format
+                }
+            }
 			if long != "" {
-				fmt.Printf("    -%s,%"+strconv.Itoa(max+3)+"s %3s : %s\n", short, "--"+long, arg, desc)
+                format = "    %" + strconv.Itoa(maxShort+1) + "s, %" + strconv.Itoa(maxLong+2) + "s" + format
+				fmt.Printf(format, "-" + short, "--"+long, desc)
 			} else {
-				fmt.Printf("    -%"+strconv.Itoa(max+8)+"s %3s : %s\n", short, arg, desc)
+                format = "    %" + strconv.Itoa(maxShort+maxLong+5) + "s" + format
+				fmt.Printf(format, "-" + short, desc)
 			}
 		}
 		print("\n\n")
