@@ -47,20 +47,20 @@ func PrintFlags(flags interface{}) {
 			long := t.Field(i).Tag.Get("long")
 			arg := t.Field(i).Tag.Get("arg")
 			desc := t.Field(i).Tag.Get("desc")
-            format := " : %s\n"
-            if maxArg > 0 {
-			    if arg == "true" {
-				    format = " arg" + format
-			    } else {
-                    format = "    " + format
-                }
-            }
+			format := " : %s\n"
+			if maxArg > 0 {
+				if arg == "true" {
+					format = " arg" + format
+				} else {
+					format = "    " + format
+				}
+			}
 			if long != "" {
-                format = "    %" + strconv.Itoa(maxShort+1) + "s, %" + strconv.Itoa(maxLong+2) + "s" + format
-				fmt.Printf(format, "-" + short, "--"+long, desc)
+				format = "    %" + strconv.Itoa(maxShort+1) + "s, %" + strconv.Itoa(maxLong+2) + "s" + format
+				fmt.Printf(format, "-"+short, "--"+long, desc)
 			} else {
-                format = "    %" + strconv.Itoa(maxShort+maxLong+5) + "s" + format
-				fmt.Printf(format, "-" + short, desc)
+				format = "    %" + strconv.Itoa(maxShort+maxLong+5) + "s" + format
+				fmt.Printf(format, "-"+short, desc)
 			}
 		}
 		print("\n\n")

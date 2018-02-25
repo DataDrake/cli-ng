@@ -60,17 +60,21 @@ func (r *RootCMD) Usage() {
 	translate.Printf("COMMANDS")
 	print("\n\n")
 	var keys []string
-	i := -1
-	for k := range r.Subcommands {
-		keys = append(keys, k)
-		if len(k) > i {
-			i = len(k)
+	maxKey := 0
+	maxAlias := 0
+	for key, cmd := range r.Subcommands {
+		keys = append(keys, key)
+		if len(key) > maxKey {
+			maxKey = len(key)
+		}
+		if len(cmd.Alias) > maxAlias {
+			maxAlias = len(cmd.Alias)
 		}
 	}
 	sort.Strings(keys)
-	i += 4
+	format := "    %" + strconv.Itoa(maxKey) + "s (%" + strconv.Itoa(maxAlias) + "s) : %s\n"
 	for _, k := range keys {
-		fmt.Printf("%"+strconv.Itoa(i)+"s (%s) : %s\n", k, r.Subcommands[k].Alias, r.Subcommands[k].Short)
+		fmt.Printf(format, k, r.Subcommands[k].Alias, r.Subcommands[k].Short)
 	}
 	print("\n")
 	if r.Flags != nil {
