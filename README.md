@@ -1,8 +1,12 @@
 # cli-ng
 An easy to use CLI library for the Go language
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/DataDrake/cli-ng)](https://goreportcard.com/report/github.com/DataDrake/cli-ng)
+[![license](https://img.shields.io/github/license/DataDrake/cli-ng.svg)]()
+[![Documentation](https://godoc.org/github.com/DataDrake/cli-ng?status.svg)](http://godoc.org/github.com/DataDrake/cli-ng)
+
 ### License
-Copyright 2017 Bryan T. Meyers <bmeyers@datadrake.com>
+Copyright 2017-2018 Bryan T. Meyers <bmeyers@datadrake.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
