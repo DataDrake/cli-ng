@@ -110,7 +110,9 @@ func (r *RootCMD) Run() {
 		}
 	}
 	// Handle any flags for the RootCMD
-	p.SetFlags(r.Flags)
+    if r.Flags != nil {
+        p.SetFlags(r.Flags)
+    }
 	// Not yet supported
 	//p.SubFlags(c)
 	// Handle the arguments for the subcommand
