@@ -2,30 +2,39 @@
 
 
 [[projects]]
+  digest = "1:821e399ed2713646f3d74b6c9744fab0385c28435e19f205210312693845153e"
   name = "github.com/kisielk/gotool"
   packages = ["internal/load"]
+  pruneopts = "UT"
   revision = "80517062f582ea3340cd4baf70e86d539ae7d84d"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:9cc76ea3318a9f38443a48d7e64aa2e54bbf7d583418c84dae773b9d4bfe2c8a"
   name = "github.com/leonelquinteros/gotext"
   packages = ["."]
+  pruneopts = "UT"
   revision = "92b69ffa4cc0895b83b42f50065e9de5a3c32960"
   version = "v1.3.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:550b558c67eb89895c0340dc551de58033d1bfaecbf46f1405d6f0bd03e3fbee"
   name = "github.com/mattn/kinako"
   packages = [
     "ast",
     "parser",
-    "vm"
+    "vm",
   ]
+  pruneopts = "UT"
   revision = "332c0a7e205a29536e672337a4bea6c7a96b04c1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a352a3a63ccef0f30bc445c3b9a17553d923b719f45ddcd814b76380092efbc8"
+  input-imports = [
+    "github.com/kisielk/gotool/internal/load",
+    "github.com/leonelquinteros/gotext",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
