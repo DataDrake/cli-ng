@@ -71,11 +71,11 @@ func (r *RootCMD) Usage() {
 			maxAlias = len(cmd.Alias)
 		}
 	}
-    maxAlias +=2
+	maxAlias += 2
 	sort.Strings(keys)
 	format := "    %" + strconv.Itoa(maxKey) + "s %" + strconv.Itoa(maxAlias) + "s : %s\n"
 	for _, k := range keys {
-		fmt.Printf(format, k, "(" + r.Subcommands[k].Alias + ")", r.Subcommands[k].Short)
+		fmt.Printf(format, k, "("+r.Subcommands[k].Alias+")", r.Subcommands[k].Short)
 	}
 	print("\n")
 	if r.Flags != nil {
@@ -110,9 +110,9 @@ func (r *RootCMD) Run() {
 		}
 	}
 	// Handle any flags for the RootCMD
-    if r.Flags != nil {
-        p.SetFlags(r.Flags)
-    }
+	if r.Flags != nil {
+		p.SetFlags(r.Flags)
+	}
 	// Not yet supported
 	//p.SubFlags(c)
 	// Handle the arguments for the subcommand
