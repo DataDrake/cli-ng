@@ -26,6 +26,6 @@ msgstr "GLOBAL FLAGS:"
 
 func init() {
 	po := new(gotext.Po)
-	po.Parse(enUS)
+	po.Parse([]byte(enUS))
 	Internal["en_US"] = po
 }
