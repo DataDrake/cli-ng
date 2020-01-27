@@ -1,0 +1,38 @@
+{
+    "cli-ng": {
+        "usage": "USAGE",
+        "cmd": "CMD",
+        "desc": "DESCRIPTION",
+        "arg": "arg",
+        "cmds": {
+            "root": {
+                "short": "root command description",
+                "flags": {
+                    "verbose": {
+                        "short": "v",
+                        "long": "verbose",
+                        "desc": "Enable verbose output"
+                    }
+                }
+            },
+            "help": {
+                "name": "help",
+                "alias": "?",
+                "short": "Get help for other sub-commands",
+                "args": {
+                    "cmd": {
+                        "name": "CMD",
+                        "desc": "Name of sub-command"
+                    }
+                },
+                "flags": {
+                    "nocolor": {
+                        "short": "N",
+                        "long": "no-color",
+                        "desc": "Disable colors in output"
+                    }
+                }
+            }
+        }
+    }
+}
