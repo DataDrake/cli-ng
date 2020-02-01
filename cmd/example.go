@@ -26,8 +26,14 @@ var Example = CMD{
 	Name:  "example",
 	Alias: "ex",
 	Short: "Example command for testing",
+	Flags: &ExampleFlags{},
 	Args:  &ExampleArgs{},
 	Run:   ExampleRun,
+}
+
+// ExampleFlags contains the additional flags for the "example" subcommand
+type ExampleFlags struct {
+	Boop bool `short:"b" long:"boop" desc:"You saw nothing"`
 }
 
 // ExampleArgs contains the arguments for the "example" subcommand
@@ -39,8 +45,12 @@ type ExampleArgs struct {
 func ExampleRun(r *RootCMD, c *CMD) {
 	// Get the arguments
 	args := c.Args.(*ExampleArgs).Args
+	flags := c.Flags.(*ExampleFlags)
+	if flags.Boop {
+		fmt.Println("You got booped!!!")
+	}
 	if len(args) == 0 {
-		fmt.Printf("You get nothing!!!\n")
+		fmt.Println("You get nothing!!!")
 		os.Exit(1)
 	}
 	for _, arg := range args {

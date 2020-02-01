@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // CMD is a type for all commands
@@ -28,6 +29,7 @@ type CMD struct {
 	Short  string
 	Hidden bool
 	Args   interface{}
+	Flags  interface{}
 	Run    func(r *RootCMD, c *CMD)
 }
 
@@ -56,6 +58,11 @@ func Usage(r *RootCMD, c *CMD) {
 			fmt.Printf(format, t.Field(i).Name, t.Field(i).Tag.Get("desc"))
 		}
 		print("\n")
+	}
+	// Print global flags
+	if c.Flags != nil {
+		fmt.Printf("%s FLAGS:\n\n", strings.ToUpper(c.Name))
+		PrintFlags(c.Flags)
 	}
 	// Print global flags
 	if r.Flags != nil {

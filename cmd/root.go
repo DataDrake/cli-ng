@@ -113,7 +113,11 @@ func (r *RootCMD) Run() {
 		p.SetFlags(r.Flags)
 	}
 	// Not yet supported
-	//p.SubFlags(c)
+	if c.Flags != nil {
+		p.SetFlags(c.Flags)
+	}
+	// Check for unknown flags
+	p.UnknownFlags()
 	// Handle the arguments for the subcommand
 	if !p.SetArgs(c.Args) {
 		Usage(r, c)

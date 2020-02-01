@@ -118,7 +118,7 @@ func setSlice(field reflect.Value, value []string) error {
 }
 
 // SetFlags attempts to set the entries in 'flags', using the previously parsed arguments
-func (p *Parser) SetFlags(flags interface{}) bool {
+func (p *Parser) SetFlags(flags interface{}) {
 	// Get the struct element values
 	flagsElement := reflect.ValueOf(flags).Elem()
 	// Get the struct element types
@@ -145,14 +145,15 @@ func (p *Parser) SetFlags(flags interface{}) bool {
 			delete(p.flags, deletion)
 		}
 	}
-	// Check for unrecognized flags
+}
+
+// UnknownFlags checks for unregistered flags that are set
+func (p *Parser) UnknownFlags() {
 	if len(p.flags) > 0 {
 		for name, flag := range p.flags {
 			fmt.Fprintf(os.Stderr, "Unrecognized flag '%s' with argument '%s'\n", name, flag.value)
 		}
-		return false
 	}
-	return true
 }
 
 // SetArgs attempts to set the entries in 'args', using the previously parsed arguments

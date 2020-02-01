@@ -22,16 +22,16 @@ import (
 
 // Hidden fulfills the "hidden" subcommand
 var Hidden = CMD{
-	Name:  "hidden",
-	Alias: "hi",
-	Short: "Hidden command for testing",
+	Name:   "hidden",
+	Alias:  "hi",
+	Short:  "Hidden command for testing",
 	Hidden: true,
-	Args:  &HiddenArgs{},
-	Run:   HiddenRun,
+	Args:   &HiddenArgs{},
+	Run:    HiddenRun,
 }
 
 // HiddenArgs contains the arguments for the "hidden" subcommand
-type HiddenArgs struct {}
+type HiddenArgs struct{}
 
 // HiddenRun prints the usage for the requested command
 func HiddenRun(r *RootCMD, c *CMD) {
