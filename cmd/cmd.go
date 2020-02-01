@@ -1,5 +1,5 @@
 //
-// Copyright 2017-2018 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2017-2020 Bryan T. Meyers <root@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package cmd
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 )
 
 // CMD is a type for all commands
@@ -33,7 +32,9 @@ type CMD struct {
 
 // Usage prints a general usage statement
 func Usage(r *RootCMD, c *CMD) {
-	fmt.Printf("USAGE: %s %s [OPTIONS]", r.Name, c.Name)
+	// Print the usage line
+	fmt.Printf("USAGE: %s [OPTIONS] %s", r.Name, c.Name)
+	// Print the argument names
 	t := reflect.TypeOf(c.Args).Elem()
 	max := 0
 	for i := 0; i < t.NumField(); i++ {
@@ -44,19 +45,20 @@ func Usage(r *RootCMD, c *CMD) {
 		}
 	}
 	print("\n\n")
-	fmt.Printf("DESCRIPTION: %s", c.Short)
-	print("\n\n")
+	// Print the description
+	fmt.Printf("DESCRIPTION: %s\n\n", c.Short)
+	// Print the arguments
+	format := fmt.Sprintf("%%%ds : %%s\n", max+4)
 	if t.NumField() > 0 {
-		fmt.Printf("ARGUMENTS:")
-		print("\n\n")
+		fmt.Printf("ARGUMENTS:\n\n")
 		for i := 0; i < t.NumField(); i++ {
-			fmt.Printf("%"+strconv.Itoa(max+4)+"s : %s\n", t.Field(i).Name, t.Field(i).Tag.Get("desc"))
+			fmt.Printf(format, t.Field(i).Name, t.Field(i).Tag.Get("desc"))
 		}
 		print("\n")
 	}
+	// Print global flags
 	if r.Flags != nil {
-		fmt.Printf("GLOBAL FLAGS:")
-		print("\n\n")
+		fmt.Printf("GLOBAL FLAGS:\n\n")
 		PrintFlags(r.Flags)
 	}
 }

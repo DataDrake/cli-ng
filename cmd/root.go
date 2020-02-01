@@ -1,5 +1,5 @@
 //
-// Copyright 2017-2018 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2017-2020 Bryan T. Meyers <root@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"github.com/DataDrake/cli-ng/options"
 	"os"
 	"sort"
-	"strconv"
 )
 
 // RootCMD is the main command that runs everything
@@ -50,14 +49,15 @@ func (r *RootCMD) RegisterCMD(c *CMD) {
 
 // Usage prints the usage for this program
 func (r *RootCMD) Usage() {
-	fmt.Printf("USAGE: %s CMD [OPTIONS]", r.Name)
-	print("\n\n")
+	// Print Usage
+	fmt.Printf("USAGE: %s [OPTIONS] CMD\n\n", r.Name)
+	// Print Description
 	if len(r.Short) > 0 {
-		fmt.Printf("DESCRIPTION: %s", r.Short)
-		print("\n\n")
+		fmt.Printf("DESCRIPTION: %s\n\n", r.Short)
 	}
-	fmt.Printf("COMMANDS:")
-	print("\n\n")
+	// Print sub-commands
+	fmt.Printf("COMMANDS:\n\n")
+	// Key the names of the sub-commands and find the longest command and alias
 	var keys []string
 	maxKey := 0
 	maxAlias := 0
@@ -70,16 +70,16 @@ func (r *RootCMD) Usage() {
 			maxAlias = len(cmd.Alias)
 		}
 	}
-	maxAlias += 2
 	sort.Strings(keys)
-	format := "    %" + strconv.Itoa(maxKey) + "s %" + strconv.Itoa(maxAlias) + "s : %s\n"
+	// Add spacing for ()
+	format := fmt.Sprintf("    %%%ds (%%%ds) : %%s\n", maxKey, maxAlias)
 	for _, k := range keys {
-		fmt.Printf(format, k, "("+r.Subcommands[k].Alias+")", r.Subcommands[k].Short)
+		fmt.Printf(format, k, r.Subcommands[k].Alias, r.Subcommands[k].Short)
 	}
 	print("\n")
+	// Print the global flags
 	if r.Flags != nil {
-		fmt.Printf("GLOBAL FLAGS:")
-		print("\n\n")
+		fmt.Printf("GLOBAL FLAGS:\n\n")
 		PrintFlags(r.Flags)
 	}
 	os.Exit(1)
@@ -89,12 +89,10 @@ func (r *RootCMD) Usage() {
 func (r *RootCMD) Run() {
 	if len(os.Args) < 2 {
 		r.Usage()
-		os.Exit(1)
 	}
 	p, sub := options.NewParser(os.Args[1:])
 	if sub == "" {
 		r.Usage()
-		os.Exit(1)
 	}
 	// Get the subcommand if it exists
 	c := r.Subcommands[sub]
@@ -105,7 +103,6 @@ func (r *RootCMD) Run() {
 		}
 		if c == nil {
 			r.Usage()
-			os.Exit(1)
 		}
 	}
 	// Handle any flags for the RootCMD

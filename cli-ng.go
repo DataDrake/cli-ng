@@ -1,5 +1,5 @@
 //
-// Copyright 2017-2018 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2017-2020 Bryan T. Meyers <root@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@ func main() {
 
 	// Global Flags
 	flags := struct {
-		Debug   bool `short:"d" arg:"true" long:"debug" desc:"Show debugging information"`
-		NoColor bool `short:"N" long:"no-color" desc:"Disable coloring of output text"`
-		Yes     bool `short:"y" desc:"assume yes in all yes/no queries"`
-		Verbose bool `short:"v" long:"verbose" desc:"Detailed output"`
+		Debug   bool  `short:"d" arg:"true" long:"debug" desc:"Show debugging information"`
+		NoColor bool  `short:"N" long:"no-color" desc:"Disable coloring of output text"`
+		Yes     bool  `short:"y" desc:"assume yes in all yes/no queries"`
+		Verbose bool  `short:"v" long:"verbose" desc:"Detailed output"`
+		Level   int64 `short:"l" arg:"true" long:"level" desc:"Level of something"`
 	}{}
 
 	// Build Application
@@ -39,6 +40,7 @@ func main() {
 
 	// Setup the Sub-Commands
 	r.RegisterCMD(&cmd.Help)
+	r.RegisterCMD(&cmd.Example)
 
 	// Run the program
 	r.Run()

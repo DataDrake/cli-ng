@@ -1,5 +1,5 @@
 //
-// Copyright 2017-2018 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2017-2020 Bryan T. Meyers <root@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,147 +30,160 @@ type Parser struct {
 	args  []string
 }
 
+// parseOption adds an option to our internal table
+func (p *Parser) parseOption(option, prefix, kind string) {
+	pieces := strings.Split(option, "=")
+	if len(pieces) == 1 {
+		p.flags[strings.TrimPrefix(pieces[0], prefix)] = Flag{kind, ""}
+	} else {
+		p.flags[strings.TrimPrefix(pieces[0], prefix)] = Flag{kind, pieces[1]}
+	}
+}
+
 // NewParser does the initial parsing of arguments and returns the resulting Parser
 func NewParser(raw []string) (p *Parser, sub string) {
+	// Check for subcommand
 	if len(raw) < 1 {
 		panic("Must use a subcommand")
 	}
+	// Init parser
 	p = &Parser{make(map[string]Flag), make([]string, 0)}
-	sub = raw[0]
-	i := 1
-	for i < len(raw) {
+	// Parse options
+	for _, curr := range raw {
 		switch {
-		case strings.HasPrefix(raw[i], "--"):
-			pieces := strings.Split(raw[i], "=")
-			if len(pieces) == 1 {
-				p.flags[strings.TrimPrefix(pieces[0], "--")] = Flag{Long, ""}
-			} else {
-				p.flags[strings.TrimPrefix(pieces[0], "--")] = Flag{Long, pieces[1]}
-			}
-			i++
-		case strings.HasPrefix(raw[i], "-"):
-			pieces := strings.Split(raw[i], "=")
-			if len(pieces) == 1 {
-				p.flags[strings.TrimPrefix(pieces[0], "-")] = Flag{Short, ""}
-			} else {
-				p.flags[strings.TrimPrefix(pieces[0], "-")] = Flag{Short, pieces[1]}
-			}
-			i++
+		case strings.HasPrefix(curr, "--"):
+			// Parse long option
+			p.parseOption(curr, "--", Long)
+		case strings.HasPrefix(curr, "-"):
+			// Parse short option
+			p.parseOption(curr, "-", Short)
 		default:
-			goto END
+			// Get subcommand
+			if sub == "" {
+				sub = curr
+			} else {
+				// get arguments
+				p.args = append(p.args, curr)
+			}
 		}
 	}
-END:
-	if i < len(raw) {
-		p.args = append(p.args, raw[i:]...)
-	}
+	fmt.Printf("%v\n", p.flags)
 	return
 }
 
+// setField set a StructField to a value
+func setField(field reflect.Value, value string) error {
+	switch field.Kind() {
+	case reflect.Bool:
+		// Bools
+		field.SetBool(true)
+	case reflect.String:
+		//String
+		field.SetString(value)
+	case reflect.Int64:
+		// Int64
+		i, e := strconv.ParseInt(value, 10, 64)
+		if e != nil {
+			return e
+		}
+		field.SetInt(i)
+	case reflect.Uint64:
+		// Uint64
+		u, e := strconv.ParseUint(value, 10, 64)
+		if e != nil {
+			return e
+		}
+		field.SetUint(u)
+	case reflect.Float64:
+		// Float64
+		f, e := strconv.ParseFloat(value, 64)
+		if e != nil {
+			return e
+		}
+		field.SetFloat(f)
+	default:
+		return fmt.Errorf("[cli-ng] Unsupported field type: %s", field.Kind().String())
+	}
+	return nil
+}
+
+func setSlice(field reflect.Value, value []string) error {
+	kind := field.Type().Elem().Kind()
+	switch kind {
+	case reflect.String:
+		field.Set(reflect.ValueOf(value))
+	default:
+		return fmt.Errorf("[cli-ng] Unsupported arg slice type '%s'", kind.String())
+	}
+	return nil
+}
+
 // SetFlags attempts to set the entries in 'flags', using the previously parsed arguments
-func (p *Parser) SetFlags(flags interface{}) {
+func (p *Parser) SetFlags(flags interface{}) bool {
+	// Get the struct element values
 	flagsElement := reflect.ValueOf(flags).Elem()
+	// Get the struct element types
 	flagsType := flagsElement.Type()
+	// Iterate over struct fields
 	for i := 0; i < flagsElement.NumField(); i++ {
-		typeField := flagsType.Field(i)
-		elementField := flagsElement.Field(i)
+		tags := flagsType.Field(i).Tag
+		element := flagsElement.Field(i)
+		if !element.CanSet() {
+			continue
+		}
 		var deletion string
 		for k, v := range p.flags {
-			if k == typeField.Tag.Get(v.kind) && elementField.CanSet() {
-				var err error
-				switch elementField.Kind() {
-				case reflect.Bool:
-					elementField.SetBool(true)
-				case reflect.String:
-					elementField.SetString(v.value)
-				case reflect.Int64:
-					i, e := strconv.ParseInt(v.value, 10, 64)
-					if e == nil {
-						elementField.SetInt(i)
-					} else {
-						err = e
-					}
-				case reflect.Uint64:
-					u, e := strconv.ParseUint(v.value, 10, 64)
-					if e == nil {
-						elementField.SetUint(u)
-					} else {
-						err = e
-					}
-				case reflect.Float64:
-					f, e := strconv.ParseFloat(v.value, 64)
-					if e == nil {
-						elementField.SetFloat(f)
-					} else {
-						err = e
-					}
-				default:
-					panic("[cli-ng] Unsupported flag type: " + elementField.Kind().String())
-				}
-				if err != nil {
+			if k == tags.Get(v.kind) {
+				if err := setField(element, v.value); err != nil {
 					panic("Failed to parse flag '" + k + "', reason: " + err.Error())
 				}
 				deletion = k
 				break
 			}
 		}
+		// Remove if a match is found (speed, duplication)
 		if deletion != "" {
 			delete(p.flags, deletion)
 		}
 	}
-}
-
-// SetArgs attempts to set the entries in 'args', using the previously parsed arguments
-func (p *Parser) SetArgs(args interface{}) bool {
-	argsElement := reflect.ValueOf(args).Elem()
+	// Check for unrecognized flags
 	if len(p.flags) > 0 {
 		for name, flag := range p.flags {
 			fmt.Fprintf(os.Stderr, "Unrecognized flag '%s' with argument '%s'\n", name, flag.value)
 		}
 		return false
 	}
-	if len(p.args) != argsElement.NumField() {
+	return true
+}
+
+// SetArgs attempts to set the entries in 'args', using the previously parsed arguments
+func (p *Parser) SetArgs(args interface{}) bool {
+	argsElement := reflect.ValueOf(args).Elem()
+	num := argsElement.NumField()
+	if num > 0 {
+		if arg := argsElement.Field(num - 1); arg.Kind() == reflect.Slice {
+			num--
+		}
+	}
+	if len(p.args) < num {
 		return false
 	}
 	for i := 0; i < argsElement.NumField(); i++ {
-		elementField := argsElement.Field(i)
-		v := p.args[i]
-		if elementField.CanSet() {
-			var err error
-			switch elementField.Kind() {
-			case reflect.Bool:
-				elementField.SetBool(true)
-			case reflect.String:
-				elementField.SetString(v)
-			case reflect.Int64:
-				i, e := strconv.ParseInt(v, 10, 64)
-				if e == nil {
-					elementField.SetInt(i)
-				} else {
-					err = e
-				}
-			case reflect.Uint64:
-				u, e := strconv.ParseUint(v, 10, 64)
-				if e == nil {
-					elementField.SetUint(u)
-				} else {
-					err = e
-				}
-			case reflect.Float64:
-				f, e := strconv.ParseFloat(v, 64)
-				if e == nil {
-					elementField.SetFloat(f)
-				} else {
-					err = e
-				}
-			default:
-				panic("[cli-ng] Unsupported arg type: " + elementField.Kind().String())
+		arg := argsElement.Field(i)
+		if !arg.CanSet() {
+			continue
+		}
+		if arg.Kind() == reflect.Slice {
+			if i != (argsElement.NumField() - 1) {
+				panic("[cli-ng] arg slice must be the last argument")
 			}
-			if err != nil {
-				panic("Failed to parse arg '" + elementField.String() + "', reason: " + err.Error())
+			if err := setSlice(arg, p.args[i:]); err != nil {
+				panic("Failed to parse arg '" + arg.String() + "', reason: " + err.Error())
 			}
 		} else {
-			panic("[cli-ng] arg '" + elementField.String() + "' must be public")
+			if err := setField(arg, p.args[i]); err != nil {
+				panic("Failed to parse arg '" + arg.String() + "', reason: " + err.Error())
+			}
 		}
 	}
 	return true

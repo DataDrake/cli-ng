@@ -1,5 +1,5 @@
 //
-// Copyright 2017-2018 Bryan T. Meyers <bmeyers@datadrake.com>
+// Copyright 2017-2020 Bryan T. Meyers <root@datadrake.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,21 +37,23 @@ type HelpArgs struct {
 
 // HelpRun prints the usage for the requested command
 func HelpRun(r *RootCMD, c *CMD) {
-
+	// Get the arguments
 	args := c.Args.(*HelpArgs)
-
+	// Find the subcommand
 	sub := r.Subcommands[args.Subcommand]
 	if sub == nil {
+		// Find the aliased subcommand
 		alias := r.Aliases[args.Subcommand]
 		if alias != "" {
 			sub = r.Subcommands[alias]
 		}
 	}
+	// Fail if no matches
 	if sub == nil {
 		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", args.Subcommand)
 		Usage(r, c)
 		os.Exit(1)
 	}
+	// Print usage
 	Usage(r, sub)
-
 }
