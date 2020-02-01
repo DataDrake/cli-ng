@@ -42,7 +42,7 @@ func PrintFlags(flags interface{}) {
 			}
 		}
 		// Generate format strings
-		formatLong := fmt.Sprintf("    %%%ds, %%%ds %%3s : %%s\n", maxShort+1, maxLong+2)
+		formatLong := fmt.Sprintf("    %%-%ds, %%-%ds %%3s : %%s\n", maxShort+1, maxLong+2)
 		formatShort := fmt.Sprintf("    %%-%ds %%3s : %%s\n", maxShort+maxLong+5)
 		// Iterate over arguments
 		for i := 0; i < t.NumField(); i++ {
