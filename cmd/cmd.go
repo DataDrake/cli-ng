@@ -42,7 +42,11 @@ func Usage(r *RootCMD, c *CMD) {
 	max := 0
 	for i := 0; i < t.NumField(); i++ {
 		name := t.Field(i).Name
-		fmt.Printf(" <%s>", name)
+		if t.Field(i).Type.Kind() == reflect.Slice {
+			fmt.Printf(" [%s1 ... %sN]", name, name)
+		} else {
+			fmt.Printf(" <%s>", name)
+		}
 		if len(name) > max {
 			max = len(name)
 		}
