@@ -62,6 +62,9 @@ func (r *RootCMD) Usage() {
 	maxKey := 0
 	maxAlias := 0
 	for key, cmd := range r.Subcommands {
+		if cmd.Hidden {
+			continue
+		}
 		keys = append(keys, key)
 		if len(key) > maxKey {
 			maxKey = len(key)

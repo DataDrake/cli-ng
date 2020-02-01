@@ -23,11 +23,12 @@ import (
 
 // CMD is a type for all commands
 type CMD struct {
-	Name  string
-	Alias string
-	Short string
-	Args  interface{}
-	Run   func(r *RootCMD, c *CMD)
+	Name   string
+	Alias  string
+	Short  string
+	Hidden bool
+	Args   interface{}
+	Run    func(r *RootCMD, c *CMD)
 }
 
 // Usage prints a general usage statement

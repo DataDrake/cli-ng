@@ -67,7 +67,6 @@ func NewParser(raw []string) (p *Parser, sub string) {
 			}
 		}
 	}
-	fmt.Printf("%v\n", p.flags)
 	return
 }
 

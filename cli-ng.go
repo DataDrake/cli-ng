@@ -41,6 +41,7 @@ func main() {
 	// Setup the Sub-Commands
 	r.RegisterCMD(&cmd.Help)
 	r.RegisterCMD(&cmd.Example)
+	r.RegisterCMD(&cmd.Hidden)
 
 	// Run the program
 	r.Run()
