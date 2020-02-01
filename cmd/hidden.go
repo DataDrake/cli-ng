@@ -37,5 +37,5 @@ type HiddenArgs struct{}
 func HiddenRun(r *RootCMD, c *CMD) {
 	// Get the arguments
 	// args := c.Args.(*HiddenArgs).Args
-	fmt.Println("You didn't see me!!!!!!\n")
+	fmt.Println("You didn't see me!!!!!!")
 }
