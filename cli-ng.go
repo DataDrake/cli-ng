@@ -42,6 +42,7 @@ func main() {
 	r.RegisterCMD(&cmd.Help)
 	r.RegisterCMD(&cmd.Example)
 	r.RegisterCMD(&cmd.Hidden)
+	r.RegisterCMD(&cmd.GenManPages)
 
 	// Run the program
 	r.Run()
