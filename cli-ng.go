@@ -24,7 +24,7 @@ func main() {
 
 	// Global Flags
 	flags := struct {
-		Debug   bool  `short:"d" arg:"true" long:"debug" desc:"Show debugging information"`
+		Debug   bool  `short:"d" long:"debug" desc:"Show debugging information"`
 		NoColor bool  `short:"N" long:"no-color" desc:"Disable coloring of output text"`
 		Yes     bool  `short:"y" desc:"assume yes in all yes/no queries"`
 		Verbose bool  `short:"v" long:"verbose" desc:"Detailed output"`
@@ -32,17 +32,17 @@ func main() {
 	}{}
 
 	// Build Application
-	r := &cmd.RootCMD{
+	r := &cmd.Root{
 		Name:  "cli-ng",
 		Short: "An easy to use CLI library for the Go language",
 		Flags: &flags,
 	}
 
 	// Setup the Sub-Commands
-	r.RegisterCMD(&cmd.Help)
-	r.RegisterCMD(&cmd.Example)
-	r.RegisterCMD(&cmd.Hidden)
-	r.RegisterCMD(&cmd.GenManPages)
+	cmd.Register(&cmd.Help)
+	cmd.Register(&cmd.Example)
+	cmd.Register(&cmd.Hidden)
+	cmd.Register(&cmd.GenManPages)
 
 	// Run the program
 	r.Run()

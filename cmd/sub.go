@@ -16,26 +16,13 @@
 
 package cmd
 
-import (
-	"fmt"
-)
-
-// Hidden fulfills the "hidden" subcommand
-var Hidden = Sub{
-	Name:   "hidden",
-	Alias:  "hi",
-	Short:  "Hidden command for testing",
-	Hidden: true,
-	Args:   &HiddenArgs{},
-	Run:    HiddenRun,
-}
-
-// HiddenArgs contains the arguments for the "hidden" subcommand
-type HiddenArgs struct{}
-
-// HiddenRun prints the usage for the requested command
-func HiddenRun(r *Root, c *Sub) {
-	// Get the arguments
-	// args := c.Args.(*HiddenArgs).Args
-	fmt.Println("You didn't see me!!!!!!")
+// Sub is a type for all commands
+type Sub struct {
+	Name   string
+	Alias  string
+	Short  string
+	Hidden bool
+	Args   interface{}
+	Flags  interface{}
+	Run    func(r *Root, c *Sub)
 }

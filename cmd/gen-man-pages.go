@@ -26,7 +26,7 @@ import (
 )
 
 // GenManPages fulfills the "gen-man-pages" subcommand
-var GenManPages = CMD{
+var GenManPages = Sub{
 	Name:   "gen-man-pages",
 	Alias:  "gmp",
 	Short:  "Generate man-pages for the root command and each sub-command",
@@ -65,14 +65,14 @@ func GenFlags(man io.Writer, v interface{}) error {
 }
 
 // GenerateSubPage generates a man-page for a single subcommand
-func GenerateSubPage(r *RootCMD, name string) error {
+func GenerateSubPage(r *Root, name string) error {
 	// Open file
 	man, err := os.Create(r.Name + "-" + name + ".1")
 	if err != nil {
 		return err
 	}
 	defer man.Close()
-	sub := r.Subcommands[name]
+	sub := subcommands[name]
 	// Header
 	fmt.Fprintf(man, ".TH %s\\-%s 1\n", r.Name, name)
 	// Name
@@ -113,8 +113,8 @@ func GenerateSubPage(r *RootCMD, name string) error {
 }
 
 // GenerateSubPages generates a man-page for every subcommand
-func GenerateSubPages(r *RootCMD) error {
-	for name, cmd := range r.Subcommands {
+func GenerateSubPages(r *Root) error {
+	for name, cmd := range subcommands {
 		if cmd.Hidden {
 			continue
 		}
@@ -124,7 +124,7 @@ func GenerateSubPages(r *RootCMD) error {
 }
 
 // GenerateRootPage generates a man-page for the root command
-func GenerateRootPage(r *RootCMD) error {
+func GenerateRootPage(r *Root) error {
 	// Open file
 	man, err := os.Create(r.Name + ".1")
 	if err != nil {
@@ -142,7 +142,7 @@ func GenerateRootPage(r *RootCMD) error {
 	fmt.Fprintln(man, "[\\fIOPTIONS...\\fR] \\fICMD\\fR [\\fIARGS...\\fR]")
 	// Subcommands
 	names := make([]string, 0)
-	for name, cmd := range r.Subcommands {
+	for name, cmd := range subcommands {
 		if cmd.Hidden {
 			continue
 		}
@@ -151,7 +151,7 @@ func GenerateRootPage(r *RootCMD) error {
 	sort.Strings(names)
 	fmt.Fprintln(man, ".SH COMMANDS")
 	for _, name := range names {
-		sub := r.Subcommands[name]
+		sub := subcommands[name]
 		fmt.Fprintln(man, ".TP")
 		fmt.Fprintf(man, ".B %s (%s) \n", name, sub.Alias)
 		fmt.Fprint(man, sub.Short)
@@ -166,7 +166,7 @@ func GenerateRootPage(r *RootCMD) error {
 type GenManPagesArgs struct{}
 
 // GenManPagesRun prints the usage for the requested command
-func GenManPagesRun(r *RootCMD, c *CMD) {
+func GenManPagesRun(r *Root, c *Sub) {
 	// Get the arguments
 	// args := c.Args.(*GenManPagesArgs)
 	if err := GenerateRootPage(r); err != nil {

@@ -14,17 +14,22 @@
 // limitations under the License.
 //
 
-package options
+package cmd
 
-const (
-	// Short flags start with a single hyphen (ie. -flag)
-	Short = "short"
-	// Long flags start with two hyphens (ie. --flag)
-	Long = "long"
-)
+var aliases map[string]string
+var subcommands map[string]*Sub
 
-// Flag is an CLI switch that may affect execution
-type Flag struct {
-	kind  string
-	value string
+// Register a subcommand for the current root command
+func Register(c *Sub) {
+	// Add subcommand
+	if subcommands == nil {
+		subcommands = make(map[string]*Sub)
+	}
+	subcommands[c.Name] = c
+
+	// Set up the alias
+	if aliases == nil {
+		aliases = make(map[string]string)
+	}
+	aliases[c.Alias] = c.Name
 }

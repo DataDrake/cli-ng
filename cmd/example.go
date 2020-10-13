@@ -22,7 +22,7 @@ import (
 )
 
 // Example fulfills the "example" subcommand
-var Example = CMD{
+var Example = Sub{
 	Name:  "example",
 	Alias: "ex",
 	Short: "Example command for testing",
@@ -42,7 +42,7 @@ type ExampleArgs struct {
 }
 
 // ExampleRun prints the usage for the requested command
-func ExampleRun(r *RootCMD, c *CMD) {
+func ExampleRun(r *Root, c *Sub) {
 	// Get the arguments
 	args := c.Args.(*ExampleArgs).Args
 	flags := c.Flags.(*ExampleFlags)

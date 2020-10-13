@@ -22,7 +22,7 @@ import (
 )
 
 // Help fulfills the "help" subcommand
-var Help = CMD{
+var Help = Sub{
 	Name:  "help",
 	Alias: "?",
 	Short: "Get help with a specific subcommand",
@@ -36,24 +36,24 @@ type HelpArgs struct {
 }
 
 // HelpRun prints the usage for the requested command
-func HelpRun(r *RootCMD, c *CMD) {
+func HelpRun(r *Root, c *Sub) {
 	// Get the arguments
 	args := c.Args.(*HelpArgs)
 	// Find the subcommand
-	sub := r.Subcommands[args.Subcommand]
+	sub := subcommands[args.Subcommand]
 	if sub == nil {
 		// Find the aliased subcommand
-		alias := r.Aliases[args.Subcommand]
+		alias := aliases[args.Subcommand]
 		if alias != "" {
-			sub = r.Subcommands[alias]
+			sub = subcommands[alias]
 		}
 	}
 	// Fail if no matches
 	if sub == nil {
 		fmt.Printf("ERROR: '%s' is not a valid subcommand\n", args.Subcommand)
-		Usage(r, c)
+		r.Usage()
 		os.Exit(1)
 	}
 	// Print usage
-	Usage(r, sub)
+	r.SubUsage(sub)
 }
