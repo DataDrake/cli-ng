@@ -33,24 +33,7 @@ type Root struct {
 	Single bool
 }
 
-// Usage prints the usage for this program
-func (r *Root) Usage() {
-	// Print Usage
-	if r.Single {
-		fmt.Printf("NAME: %s\n\n", r.Name)
-	} else {
-		fmt.Printf("USAGE: %s CMD [OPTIONS]\n\n", r.Name)
-	}
-	// Print Description
-	if len(r.Short) > 0 {
-		fmt.Printf("DESCRIPTION: %s\n\n", r.Short)
-	}
-	// Print sub-commands
-	fmt.Printf("COMMANDS:\n\n")
-	// Key the names of the sub-commands and find the longest command and alias
-	var keys []string
-	maxKey := 0
-	maxAlias := 0
+func generateKeys() (keys []string, maxKey, maxAlias int) {
 	for key, cmd := range subcommands {
 		if cmd.Hidden {
 			continue
@@ -64,6 +47,12 @@ func (r *Root) Usage() {
 		}
 	}
 	sort.Strings(keys)
+	return
+}
+
+func (r *Root) printSubcommands() {
+	fmt.Printf("COMMANDS:\n\n")
+	keys, maxKey, maxAlias := generateKeys()
 	// Add spacing for ()
 	if r.Single {
 		format := fmt.Sprintf("    %%%ds : %%s\n", maxAlias)
@@ -77,7 +66,19 @@ func (r *Root) Usage() {
 		}
 	}
 	print("\n")
-	// Print the global flags
+}
+
+// Usage prints the usage for this program
+func (r *Root) Usage() {
+	if r.Single {
+		fmt.Printf("NAME: %s\n\n", r.Name)
+	} else {
+		fmt.Printf("USAGE: %s CMD [OPTIONS]\n\n", r.Name)
+	}
+	if len(r.Short) > 0 {
+		fmt.Printf("DESCRIPTION: %s\n\n", r.Short)
+	}
+	r.printSubcommands()
 	if r.Flags != nil {
 		fmt.Printf("GLOBAL FLAGS:\n\n")
 		PrintFlags(r.Flags)

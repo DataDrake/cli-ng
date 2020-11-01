@@ -19,17 +19,13 @@ package cmd
 var aliases map[string]string
 var subcommands map[string]*Sub
 
+func init() {
+	aliases = make(map[string]string)
+	subcommands = make(map[string]*Sub)
+}
+
 // Register a subcommand for the current root command
 func Register(c *Sub) {
-	// Add subcommand
-	if subcommands == nil {
-		subcommands = make(map[string]*Sub)
-	}
 	subcommands[c.Name] = c
-
-	// Set up the alias
-	if aliases == nil {
-		aliases = make(map[string]string)
-	}
 	aliases[c.Alias] = c.Name
 }

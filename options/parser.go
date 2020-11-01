@@ -27,18 +27,18 @@ import (
 
 // Parser can be used to read and convert the raw program arguments
 type Parser struct {
-	raw []string
+	raw     []string
+	numArgs int
+	maxArgs int
 }
 
 // NewParser does the initial parsing of arguments and returns the resulting Parser
 func NewParser(raw []string, single bool) (p *Parser, sub string) {
-	// Check for subcommand
 	if len(raw) < 1 {
 		panic("Must use a subcommand")
 	}
-	// get subcommand
+	// pop subcommand off the front
 	sub, raw = filepath.Base(raw[0]), raw[1:]
-	// Init parser
 	p = &Parser{
 		raw: raw,
 	}
@@ -48,42 +48,39 @@ func NewParser(raw []string, single bool) (p *Parser, sub string) {
 // ErrInsufficientArgs indicates that not enough arguments were provided for this subcommand
 var ErrInsufficientArgs = errors.New("Missing argument(s)")
 
+func (p *Parser) parseArg(rFlags, cFlags, args interface{}) error {
+	arg := p.raw[0]
+	switch {
+	case strings.HasPrefix(arg, "--"):
+		return p.setAnyFlag(rFlags, cFlags, "long")
+	case strings.HasPrefix(arg, "-"):
+		return p.setAnyFlag(rFlags, cFlags, "short")
+	default:
+		return p.setArg(args)
+	}
+}
+
 // Parse processes arguments and sets flags and subcommand args as needed
 func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 	var err error
-
-	numArgs := 0
-	i := 0
-
-	for i < len(p.raw) {
-		arg := p.raw[i]
-		switch {
-		case strings.HasPrefix(arg, "--"):
-			name := strings.TrimPrefix(arg, "--")
-			i, err = p.setFlag(rFlags, cFlags, i, name, "long")
-		case strings.HasPrefix(arg, "-"):
-			name := strings.TrimPrefix(arg, "-")
-			i, err = p.setFlag(rFlags, cFlags, i, name, "short")
-		default:
-			err = p.setArg(args, i, numArgs)
-			numArgs++
-			i++
-		}
-		if err != nil {
+	p.maxArgs = reflect.ValueOf(args).Elem().NumField()
+	for len(p.raw) > 0 {
+		if err = p.parseArg(rFlags, cFlags, args); err != nil {
 			return err
 		}
 	}
-	if numArgs < reflect.ValueOf(args).Elem().NumField() {
+	if p.numArgs < p.maxArgs {
 		return ErrInsufficientArgs
+	}
+	if len(p.raw) > 0 {
+		return ErrTooManyArgs
 	}
 	return err
 }
 
-// setFlag attempts to set an entry in 'flags', using the unparsed arguments
-func (p *Parser) setFlag(rFlags, cFlags interface{}, i int, name, tag string) (idx int, err error) {
-	idx = i
+func (p *Parser) setFlag(flags interface{}, tag, name string) (ok bool, err error) {
 	// Try setting root flag
-	flagsElement := reflect.ValueOf(rFlags).Elem()
+	flagsElement := reflect.ValueOf(flags).Elem()
 	flagsType := flagsElement.Type()
 	// Iterate over struct fields
 	for i := 0; i < flagsElement.NumField(); i++ {
@@ -93,126 +90,117 @@ func (p *Parser) setFlag(rFlags, cFlags interface{}, i int, name, tag string) (i
 			continue
 		}
 		if name == tags.Get(tag) {
-			idx, err = p.setField(element, idx)
+			p.raw = p.raw[1:]
+			if err = p.setField(element); err == nil {
+				ok = true
+			}
 			return
 		}
 	}
-
-	// Try setting subcommand flag
-	flagsElement = reflect.ValueOf(cFlags).Elem()
-	flagsType = flagsElement.Type()
-	// Iterate over struct fields
-	for i := 0; i < flagsElement.NumField(); i++ {
-		tags := flagsType.Field(i).Tag
-		element := flagsElement.Field(i)
-		if !element.CanSet() {
-			continue
-		}
-		if name == tags.Get(tag) {
-			idx, err = p.setField(element, idx)
-			return
-		}
-	}
-	err = fmt.Errorf("flag '%s' not found", name)
 	return
+}
+
+// setAnyFlag attempts to set an entry in 'flags', using the unparsed arguments
+func (p *Parser) setAnyFlag(rFlags, cFlags interface{}, tag string) error {
+	name := strings.TrimLeft(p.raw[0], "-")
+	ok, err := p.setFlag(rFlags, tag, name)
+	if ok || err != nil {
+		return err
+	}
+	ok, err = p.setFlag(cFlags, tag, name)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("invalid flag '%s'", name)
+	}
+	return nil
 }
 
 // ErrTooManyArgs indicates that too many arguments were provided for this subcommand
 var ErrTooManyArgs = errors.New("too many arguments")
 
 // setArg attempts to set an entry in 'args', using an unparsed argument
-func (p *Parser) setArg(args interface{}, i, numArg int) error {
+func (p *Parser) setArg(args interface{}) error {
 	argsElement := reflect.ValueOf(args).Elem()
 	num := argsElement.NumField()
 	if num == 0 {
 		return ErrTooManyArgs
 	}
-	if numArg >= num {
+	if p.numArgs >= num {
 		arg := argsElement.Field(num - 1)
 		if arg.Kind() != reflect.Slice {
 			return ErrTooManyArgs
 		}
-		p.appendSlice(arg, p.raw[i])
+		p.numArgs++
+		p.appendSlice(arg)
 		return nil
 	}
-	arg := argsElement.Field(numArg)
+	arg := argsElement.Field(p.numArgs)
 	if !arg.CanSet() {
 		return fmt.Errorf("Failed to set arg '%s', unsettable", arg)
 	}
-	var err error
-	if arg.Kind() == reflect.Slice {
-		p.appendSlice(arg, p.raw[i])
-	} else {
-		_, err = p.setField(arg, i)
+	p.numArgs++
+	if err := p.setField(arg); err != nil {
+		return fmt.Errorf("Failed to parse arg '%s', reason: %s", arg, err)
 	}
-	if err != nil {
-		err = fmt.Errorf("Failed to parse arg '%s', reason: %s", arg, err)
-	}
-	return err
+	return nil
 }
 
 // ErrMissingValue indicates that a flag does not have an associated value
 var ErrMissingValue = errors.New("missing value for field")
 
 // setField set a StructField to a value
-func (p *Parser) setField(field reflect.Value, i int) (idx int, err error) {
-	idx = i + 1
-	if field.Kind() == reflect.Bool {
+func (p *Parser) setField(field reflect.Value) error {
+	switch field.Kind() {
+	case reflect.Slice:
+		p.appendSlice(field)
+	case reflect.Bool:
 		field.SetBool(true)
-		return
+	default:
+		return p.setFieldValue(field)
 	}
-	if idx >= len(p.raw) {
-		err = ErrMissingValue
-		return
+	return nil
+}
+
+func (p *Parser) setFieldValue(field reflect.Value) error {
+	if len(p.raw) < 1 {
+		return ErrMissingValue
 	}
-	next := p.raw[idx]
-	if strings.HasPrefix("-", next) {
-		err = ErrMissingValue
-		return
+	var raw string
+	raw, p.raw = p.raw[0], p.raw[1:]
+	if strings.HasPrefix("-", raw) {
+		return ErrMissingValue
 	}
-	idx++
 	switch field.Kind() {
 	case reflect.String:
-		//String
-		field.SetString(next)
+		field.SetString(raw)
 	case reflect.Int64:
-		// Int64
-		value, e := strconv.ParseInt(next, 10, 64)
+		value, e := strconv.ParseInt(raw, 10, 64)
 		if e != nil {
-			err = fmt.Errorf("'%s' is not a valid int64", next)
-			return
+			return fmt.Errorf("'%s' is not a valid int64", raw)
 		}
 		field.SetInt(value)
 	case reflect.Uint64:
-		// Uint64
-		value, e := strconv.ParseUint(next, 10, 64)
+		value, e := strconv.ParseUint(raw, 10, 64)
 		if e != nil {
-			err = fmt.Errorf("'%s' is not a valid uint64", next)
-			return
+			return fmt.Errorf("'%s' is not a valid uint64", raw)
 		}
 		field.SetUint(value)
 	case reflect.Float64:
-		// Float64
-		value, e := strconv.ParseFloat(next, 64)
+		value, e := strconv.ParseFloat(raw, 64)
 		if e != nil {
-			err = fmt.Errorf("'%s' is not a valid float64", next)
-			return
+			return fmt.Errorf("'%s' is not a valid float64", raw)
 		}
 		field.SetFloat(value)
 	default:
-		err = fmt.Errorf("[cli-ng] Unsupported field type: %s", field.Kind().String())
-		return
-	}
-	return
-}
-
-func (p *Parser) appendSlice(field reflect.Value, value string) error {
-	kind := field.Type().Elem().Kind()
-	switch kind {
-	case reflect.String:
-		field.Set(reflect.Append(field, reflect.ValueOf(value)))
-	default:
-		return fmt.Errorf("[cli-ng] Unsupported arg slice type '%s'", kind.String())
+		return fmt.Errorf("[cli-ng] Unsupported field type: %s", field.Kind().String())
 	}
 	return nil
+}
+
+func (p *Parser) appendSlice(field reflect.Value) {
+	var value string
+	value, p.raw = p.raw[0], p.raw[1:]
+	field.Set(reflect.Append(field, reflect.ValueOf(value)))
 }

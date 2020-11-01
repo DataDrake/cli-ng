@@ -21,44 +21,55 @@ import (
 	"reflect"
 )
 
+var maxArg, maxLong, maxShort int
+
+func setStringLengths(t reflect.Type) {
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Tag.Get("arg") != "" {
+			maxArg = 4
+		}
+		if long := len(t.Field(i).Tag.Get("long")); long > maxLong {
+			maxLong = long
+		}
+		if short := len(t.Field(i).Tag.Get("short")); short > maxShort {
+			maxShort = short
+		}
+	}
+	return
+}
+
+var formatLong string
+var formatShort string
+
+func genFormatStrings(t reflect.Type) {
+	setStringLengths(t)
+	formatLong = fmt.Sprintf("    %%-%ds, %%-%ds %%3s : %%s\n", maxShort+1, maxLong+2)
+	formatShort = fmt.Sprintf("    %%-%ds %%3s : %%s\n", maxShort+maxLong+5)
+}
+
+func printFlag(t reflect.StructTag) {
+	short := t.Get("short")
+	desc := t.Get("desc")
+	format := ""
+	if maxArg > 0 && t.Get("arg") == "true" {
+		format = "arg"
+	}
+	if long := t.Get("long"); long != "" {
+		fmt.Printf(formatLong, "-"+short, "--"+long, format, desc)
+	} else {
+		fmt.Printf(formatShort, "-"+short, format, desc)
+	}
+}
+
 // PrintFlags writes out the flags in a struct
 func PrintFlags(flags interface{}) {
 	// Get all the struct elements
 	t := reflect.TypeOf(flags).Elem()
 	if t.NumField() > 0 {
-		// Find all the string lengths
-		maxArg := 0
-		maxLong := 0
-		maxShort := 0
-		for i := 0; i < t.NumField(); i++ {
-			if t.Field(i).Tag.Get("arg") != "" {
-				maxArg = 4
-			}
-			if long := len(t.Field(i).Tag.Get("long")); long > maxLong {
-				maxLong = long
-			}
-			if short := len(t.Field(i).Tag.Get("short")); short > maxShort {
-				maxShort = short
-			}
-		}
-		// Generate format strings
-		formatLong := fmt.Sprintf("    %%-%ds, %%-%ds %%3s : %%s\n", maxShort+1, maxLong+2)
-		formatShort := fmt.Sprintf("    %%-%ds %%3s : %%s\n", maxShort+maxLong+5)
+		genFormatStrings(t)
 		// Iterate over arguments
 		for i := 0; i < t.NumField(); i++ {
-			short := t.Field(i).Tag.Get("short")
-			long := t.Field(i).Tag.Get("long")
-			arg := t.Field(i).Tag.Get("arg")
-			desc := t.Field(i).Tag.Get("desc")
-			format := ""
-			if maxArg > 0 && arg == "true" {
-				format = "arg"
-			}
-			if long != "" {
-				fmt.Printf(formatLong, "-"+short, "--"+long, format, desc)
-			} else {
-				fmt.Printf(formatShort, "-"+short, format, desc)
-			}
+			printFlag(t.Field(i).Tag)
 		}
 		print("\n\n")
 	}
