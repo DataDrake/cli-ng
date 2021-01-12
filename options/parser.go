@@ -63,7 +63,7 @@ func (p *Parser) parseArg(rFlags, cFlags, args interface{}) error {
 // Parse processes arguments and sets flags and subcommand args as needed
 func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 	var err error
-	if v := reflect.ValueOf(args); !v.IsZero() {
+	if v := reflect.ValueOf(args); !v.IsValid() || !v.IsZero() {
 		p.maxArgs = v.Elem().NumField()
 	}
 	for len(p.raw) > 0 {
@@ -82,7 +82,7 @@ func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 
 func (p *Parser) setFlag(flags interface{}, tag, name string) (ok bool, err error) {
 	// Try setting root flag
-	if v := reflect.ValueOf(flags); v.IsZero() {
+	if v := reflect.ValueOf(flags); v.IsValid() && v.IsZero() {
 		return
 	}
 	flagsElement := reflect.ValueOf(flags).Elem()
