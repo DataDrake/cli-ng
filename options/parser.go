@@ -63,7 +63,9 @@ func (p *Parser) parseArg(rFlags, cFlags, args interface{}) error {
 // Parse processes arguments and sets flags and subcommand args as needed
 func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 	var err error
-	p.maxArgs = reflect.ValueOf(args).Elem().NumField()
+	if !reflect.ValueOf(args).IsNil() {
+		p.maxArgs = reflect.ValueOf(args).Elem().NumField()
+	}
 	for len(p.raw) > 0 {
 		if err = p.parseArg(rFlags, cFlags, args); err != nil {
 			return err
@@ -80,6 +82,9 @@ func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 
 func (p *Parser) setFlag(flags interface{}, tag, name string) (ok bool, err error) {
 	// Try setting root flag
+	if reflect.ValueOf(flags).IsNil() {
+		return
+	}
 	flagsElement := reflect.ValueOf(flags).Elem()
 	flagsType := flagsElement.Type()
 	// Iterate over struct fields
