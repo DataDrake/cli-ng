@@ -82,7 +82,7 @@ func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 
 func (p *Parser) setFlag(flags interface{}, tag, name string) (ok bool, err error) {
 	// Try setting root flag
-	if flags == nil || reflect.ValueOf(flags).IsNil() {
+	if flags == nil || (flags != nil && reflect.ValueOf(flags).IsNil()) {
 		return
 	}
 	flagsElement := reflect.ValueOf(flags).Elem()
