@@ -63,8 +63,10 @@ func (p *Parser) parseArg(rFlags, cFlags, args interface{}) error {
 // Parse processes arguments and sets flags and subcommand args as needed
 func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
 	var err error
-	if args != nil && reflect.ValueOf(args).IsValid() && !reflect.ValueOf(args).IsNil() {
-		p.maxArgs = reflect.ValueOf(args).Elem().NumField()
+	if args != nil {
+		if v := reflect.ValueOf(args); v.IsValid() && !v.IsZero() && !v.IsNil() {
+			p.maxArgs = reflect.ValueOf(args).Elem().NumField()
+		}
 	}
 	for len(p.raw) > 0 {
 		if err = p.parseArg(rFlags, cFlags, args); err != nil {
