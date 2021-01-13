@@ -152,7 +152,7 @@ func GenerateSubPage(r *Root, name string) error {
 // GenerateSubPages generates a man-page for every subcommand
 func GenerateSubPages(r *Root) error {
 	for name, cmd := range subcommands {
-		if cmd.Hidden {
+		if cmd.Hidden || cmd.SkipMan {
 			continue
 		}
 		if err := GenerateSubPage(r, name); err != nil {
@@ -180,7 +180,7 @@ func genRootSynopsis(man io.Writer, r *Root) {
 
 func getVisibleSubcommands(r *Root) (names []string) {
 	for name, cmd := range subcommands {
-		if cmd.Hidden {
+		if cmd.Hidden || cmd.SkipMan {
 			continue
 		}
 		names = append(names, name)

@@ -23,11 +23,12 @@ import (
 
 // Help fulfills the "help" subcommand
 var Help = Sub{
-	Name:  "help",
-	Alias: "?",
-	Short: "Get help with a specific subcommand",
-	Args:  &HelpArgs{},
-	Run:   HelpRun,
+	Name:    "help",
+	Alias:   "?",
+	Short:   "Get help with a specific subcommand",
+	SkipMan: true,
+	Args:    &HelpArgs{},
+	Run:     HelpRun,
 }
 
 // HelpArgs contains the arguments for the "help" subcommand

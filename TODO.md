@@ -8,8 +8,9 @@
    ```
    -xvf vs -x -v -f
    ```
- - [ ] Enforce single-character "short" names
+ - [x] Enforce single-character "short" names
  - [x] Re-add `nil` checks for Flags and Args.
- - [ ] Consider allowing flags before the sub-command is specified
- - [ ] Consider allowing an empty slice argument, requires StructTag
- - [ ] Add flag to suppress man page for a sub-command
+ - [ ] ~Consider allowing flags before the sub-command is specified~
+    - This is a bad idea since it would require setting flags twice to parse a sub-command and separate logic for Single binaries
+ - [x] Consider allowing an empty slice argument, requires StructTag (yes)
+ - [x] Add flag to suppress man page for a sub-command

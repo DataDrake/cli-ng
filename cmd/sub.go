@@ -18,11 +18,12 @@ package cmd
 
 // Sub is a type for all commands
 type Sub struct {
-	Name   string
-	Alias  string
-	Short  string
-	Hidden bool
-	Args   interface{}
-	Flags  interface{}
-	Run    func(r *Root, c *Sub)
+	Name    string
+	Alias   string
+	Short   string
+	Hidden  bool
+	SkipMan bool
+	Args    interface{}
+	Flags   interface{}
+	Run     func(r *Root, c *Sub)
 }

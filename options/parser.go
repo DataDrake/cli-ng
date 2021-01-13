@@ -27,20 +27,21 @@ import (
 
 // Parser can be used to read and convert the raw program arguments
 type Parser struct {
-	raw     []string
+	raw     List
 	numArgs int
 	maxArgs int
+	minArgs int
 }
 
 // NewParser does the initial parsing of arguments and returns the resulting Parser
-func NewParser(raw []string, single bool) (p *Parser, sub string) {
-	if len(raw) < 1 {
+func NewParser(args []string, single bool) (p *Parser, sub string) {
+	if len(args) < 1 {
 		panic("Must use a subcommand")
 	}
 	// pop subcommand off the front
-	sub, raw = filepath.Base(raw[0]), raw[1:]
+	sub, args = filepath.Base(args[0]), args[1:]
 	p = &Parser{
-		raw: raw,
+		raw: NewList(args),
 	}
 	return
 }
@@ -49,64 +50,102 @@ func NewParser(raw []string, single bool) (p *Parser, sub string) {
 var ErrInsufficientArgs = errors.New("Missing argument(s)")
 
 // Parse processes arguments and sets flags and subcommand args as needed
-func (p *Parser) Parse(rFlags, cFlags, args interface{}) error {
-	var err error
-	if v := reflect.ValueOf(args); v.IsValid() && !v.IsZero() {
-		p.maxArgs = v.Elem().NumField()
+func (p *Parser) Parse(rFlags, cFlags, args interface{}) (err error) {
+	if rFlags, err = p.verifyFlags(rFlags); err != nil {
+		return
 	}
-	for len(p.raw) > 0 {
+	if cFlags, err = p.verifyFlags(cFlags); err != nil {
+		return
+	}
+	if args, err = p.verifyArgs(args); err != nil {
+		return
+	}
+	for !p.raw.IsEmpty() {
 		if err = p.parseArg(rFlags, cFlags, args); err != nil {
-			return err
+			return
 		}
 	}
-	if p.numArgs < p.maxArgs {
-		return ErrInsufficientArgs
+	if p.numArgs < p.minArgs {
+		err = ErrInsufficientArgs
+		return
 	}
-	if len(p.raw) > 0 {
-		return ErrTooManyArgs
+	if !p.raw.IsEmpty() {
+		err = ErrTooManyArgs
 	}
-	return err
+	return
+}
+
+func (p *Parser) verifyFlags(flags interface{}) (out interface{}, err error) {
+	if v := reflect.ValueOf(flags); v.IsValid() && !v.IsZero() {
+		t := v.Elem().Type()
+		for i := 0; i < t.NumField(); i++ {
+			if name := t.Field(i).Tag.Get("short"); len(name) > 1 {
+				err = fmt.Errorf("short flags must have one character names, found: %s", name)
+				return
+			}
+		}
+		out = flags
+	}
+	return
+}
+
+func (p *Parser) verifyArgs(args interface{}) (out interface{}, err error) {
+	if v := reflect.ValueOf(args); v.IsValid() && !v.IsZero() {
+		p.maxArgs = v.Elem().NumField()
+		p.minArgs = p.maxArgs
+		if last := v.Elem().Type().Field(p.maxArgs - 1); last.Type.Kind() == reflect.Slice {
+			if last.Tag.Get("zero") != "" {
+				p.minArgs = p.maxArgs - 1
+			}
+		}
+		out = args
+	}
+	return
 }
 
 // ErrMissingFlagName indicates that no flag name was provided
 var ErrMissingFlagName = errors.New("missing flag name")
 
 func (p *Parser) parseArg(rFlags, cFlags, args interface{}) error {
-	arg := p.raw[0]
+	arg := p.raw.Peek()
 	switch {
 	case strings.HasPrefix(arg, "--"):
-		p.raw = p.raw[1:]
-		name := strings.TrimPrefix(arg, "--")
-		if len(name) == 0 {
-			return ErrMissingFlagName
-		}
-		return p.setAnyFlag(rFlags, cFlags, name, "long", false)
+		return p.parseLongFlag(rFlags, cFlags)
 	case strings.HasPrefix(arg, "-"):
-		p.raw = p.raw[1:]
-		chars := strings.TrimPrefix(arg, "-")
-		if len(chars) == 0 {
-			return ErrMissingFlagName
-		}
-		for i, char := range chars {
-			last := i == (len(chars) - 1)
-			if err := p.setAnyFlag(rFlags, cFlags, string(char), "short", last); err != nil {
-				return err
-			}
-		}
-		return nil
+		return p.parseShortFlags(rFlags, cFlags)
 	default:
 		return p.setArg(args)
 	}
 }
 
+func (p *Parser) parseLongFlag(rFlags, cFlags interface{}) error {
+	name := strings.TrimPrefix(p.raw.Next(), "--")
+	if len(name) == 0 {
+		return ErrMissingFlagName
+	}
+	return p.setAnyFlag(rFlags, cFlags, name, "long", false)
+}
+
+func (p *Parser) parseShortFlags(rFlags, cFlags interface{}) error {
+	chars := strings.TrimPrefix(p.raw.Next(), "-")
+	if len(chars) == 0 {
+		return ErrMissingFlagName
+	}
+	for i, char := range chars {
+		last := i == (len(chars) - 1)
+		if err := p.setAnyFlag(rFlags, cFlags, string(char), "short", last); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // setAnyFlag attempts to set an entry in 'flags', using the unparsed arguments
 func (p *Parser) setAnyFlag(rFlags, cFlags interface{}, name, tag string, last bool) error {
-	found, err := p.setFlag(rFlags, name, tag, last)
-	if found {
+	if found, err := p.setFlag(rFlags, name, tag, last); found {
 		return err
 	}
-	found, err = p.setFlag(cFlags, name, tag, last)
-	if found {
+	if found, err := p.setFlag(cFlags, name, tag, last); found {
 		return err
 	}
 	return fmt.Errorf("invalid flag '%s'", name)
@@ -114,19 +153,18 @@ func (p *Parser) setAnyFlag(rFlags, cFlags interface{}, name, tag string, last b
 
 func (p *Parser) setFlag(flags interface{}, name, tag string, last bool) (found bool, err error) {
 	// Try setting root flag
-	if v := reflect.ValueOf(flags); !v.IsValid() || v.IsZero() {
+	if flags == nil {
 		return
 	}
 	flagsElement := reflect.ValueOf(flags).Elem()
 	flagsType := flagsElement.Type()
 	// Iterate over struct fields
-	for i := 0; i < flagsElement.NumField(); i++ {
-		tags := flagsType.Field(i).Tag
+	for i := 0; i < flagsType.NumField(); i++ {
 		element := flagsElement.Field(i)
 		if !element.CanSet() {
 			continue
 		}
-		if name == tags.Get(tag) {
+		if tags := flagsType.Field(i).Tag; name == tags.Get(tag) {
 			found = true
 			err = p.setField(element, true, last)
 			return
@@ -140,16 +178,12 @@ var ErrTooManyArgs = errors.New("too many arguments")
 
 // setArg attempts to set an entry in 'args', using an unparsed argument
 func (p *Parser) setArg(args interface{}) error {
-    if v := reflect.ValueOf(args); !v.IsValid() || v.IsZero() {
-        return ErrTooManyArgs
-    }
-	argsElement := reflect.ValueOf(args).Elem()
-	num := argsElement.NumField()
-	if num == 0 {
+	if args == nil {
 		return ErrTooManyArgs
 	}
-	if p.numArgs >= num {
-		arg := argsElement.Field(num - 1)
+	argsElement := reflect.ValueOf(args).Elem()
+	if p.numArgs >= p.maxArgs {
+		arg := argsElement.Field(p.maxArgs - 1)
 		if arg.Kind() != reflect.Slice {
 			return ErrTooManyArgs
 		}
@@ -161,10 +195,10 @@ func (p *Parser) setArg(args interface{}) error {
 	if !arg.CanSet() {
 		return fmt.Errorf("Failed to set arg '%s', unsettable", arg)
 	}
-	p.numArgs++
 	if err := p.setField(arg, false, false); err != nil {
 		return fmt.Errorf("Failed to parse arg '%s', reason: %s", arg, err)
 	}
+	p.numArgs++
 	return nil
 }
 
@@ -177,6 +211,9 @@ var ErrBadGroup = errors.New("only the last short flag in a group can have an ar
 // ErrSliceFlag indicates that a flag has been given a slice type
 var ErrSliceFlag = errors.New("flags cannot be slices")
 
+// ErrBoolArg indicates that an argument is a bool (unsupported)
+var ErrBoolArg = errors.New("args cannot be bool values")
+
 // setField set a StructField to a value
 func (p *Parser) setField(field reflect.Value, flag, last bool) error {
 	switch field.Kind() {
@@ -186,6 +223,9 @@ func (p *Parser) setField(field reflect.Value, flag, last bool) error {
 		}
 		p.appendSlice(field)
 	case reflect.Bool:
+		if !flag {
+			return ErrBoolArg
+		}
 		field.SetBool(true)
 	default:
 		if flag && !last {
@@ -197,11 +237,10 @@ func (p *Parser) setField(field reflect.Value, flag, last bool) error {
 }
 
 func (p *Parser) setFieldValue(field reflect.Value) error {
-	if len(p.raw) < 1 {
+	if p.raw.IsEmpty() {
 		return ErrMissingValue
 	}
-	var raw string
-	raw, p.raw = p.raw[0], p.raw[1:]
+	raw := p.raw.Next()
 	if strings.HasPrefix("-", raw) {
 		return ErrMissingValue
 	}
@@ -227,13 +266,12 @@ func (p *Parser) setFieldValue(field reflect.Value) error {
 		}
 		field.SetFloat(value)
 	default:
-		return fmt.Errorf("[cli-ng] Unsupported field type: %s", field.Kind().String())
+		return fmt.Errorf("unsupported field type: %s", field.Kind().String())
 	}
 	return nil
 }
 
 func (p *Parser) appendSlice(field reflect.Value) {
-	var value string
-	value, p.raw = p.raw[0], p.raw[1:]
+	value := p.raw.Next()
 	field.Set(reflect.Append(field, reflect.ValueOf(value)))
 }

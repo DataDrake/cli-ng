@@ -38,7 +38,7 @@ type ExampleFlags struct {
 
 // ExampleArgs contains the arguments for the "example" subcommand
 type ExampleArgs struct {
-	Args []string `desc:"Slice o' Args"`
+	Args []string `zero:"yes" desc:"Slice o' Args"`
 }
 
 // ExampleRun prints the usage for the requested command
