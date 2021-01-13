@@ -140,6 +140,9 @@ var ErrTooManyArgs = errors.New("too many arguments")
 
 // setArg attempts to set an entry in 'args', using an unparsed argument
 func (p *Parser) setArg(args interface{}) error {
+    if v := reflect.ValueOf(args); !v.IsValid() || v.IsZero() {
+        return ErrTooManyArgs
+    }
 	argsElement := reflect.ValueOf(args).Elem()
 	num := argsElement.NumField()
 	if num == 0 {
