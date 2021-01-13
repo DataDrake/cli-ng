@@ -18,59 +18,60 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/DataDrake/cli-ng/term"
+	"io"
+	"os"
 	"reflect"
+	"text/tabwriter"
 )
-
-var maxArg, maxLong, maxShort int
-
-func setStringLengths(t reflect.Type) {
-	for i := 0; i < t.NumField(); i++ {
-		if t.Field(i).Tag.Get("arg") != "" {
-			maxArg = 4
-		}
-		if long := len(t.Field(i).Tag.Get("long")); long > maxLong {
-			maxLong = long
-		}
-		if short := len(t.Field(i).Tag.Get("short")); short > maxShort {
-			maxShort = short
-		}
-	}
-	return
-}
-
-var formatLong string
-var formatShort string
-
-func genFormatStrings(t reflect.Type) {
-	setStringLengths(t)
-	formatLong = fmt.Sprintf("    %%-%ds, %%-%ds %%3s : %%s\n", maxShort+1, maxLong+2)
-	formatShort = fmt.Sprintf("    %%-%ds %%3s : %%s\n", maxShort+maxLong+5)
-}
-
-func printFlag(t reflect.StructTag) {
-	short := t.Get("short")
-	desc := t.Get("desc")
-	format := ""
-	if maxArg > 0 && t.Get("arg") == "true" {
-		format = "arg"
-	}
-	if long := t.Get("long"); long != "" {
-		fmt.Printf(formatLong, "-"+short, "--"+long, format, desc)
-	} else {
-		fmt.Printf(formatShort, "-"+short, format, desc)
-	}
-}
 
 // PrintFlags writes out the flags in a struct
 func PrintFlags(flags interface{}) {
 	// Get all the struct elements
 	t := reflect.TypeOf(flags).Elem()
+	args := hasArgs(t)
 	if t.NumField() > 0 {
-		genFormatStrings(t)
+		tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		if args {
+			fmt.Fprintln(tw, term.Bold("    NAME\tARG\tDESCRIPTION"))
+		} else {
+			fmt.Fprintln(tw, term.Bold("    NAME\tDESCRIPTION"))
+		}
 		// Iterate over arguments
 		for i := 0; i < t.NumField(); i++ {
-			printFlag(t.Field(i).Tag)
+			printFlag(tw, t.Field(i), args)
 		}
-		print("\n\n")
+		tw.Flush()
+		fmt.Println()
 	}
+}
+
+func printFlag(tw io.Writer, f reflect.StructField, args bool) {
+	short := f.Tag.Get("short")
+	desc := f.Tag.Get("desc")
+	name := "-" + short
+	if long := f.Tag.Get("long"); long != "" {
+		name += ", --" + long
+	}
+	if args {
+		fmt.Fprintf(tw, term.Resetln("    %s\t%s\t%s"), name, arg(f), desc)
+	} else {
+		fmt.Fprintf(tw, term.Resetln("    %s\t%s"), name, desc)
+	}
+}
+
+func hasArgs(t reflect.Type) bool {
+	for i := 0; i < t.NumField(); i++ {
+		if arg(t.Field(i)) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func arg(f reflect.StructField) string {
+	if f.Tag.Get("arg") != "" {
+		return f.Type.Kind().String()
+	}
+	return ""
 }

@@ -17,8 +17,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/DataDrake/cli-ng/cmd"
 )
+
+type level uint8
 
 func main() {
 
@@ -28,7 +31,7 @@ func main() {
 		NoColor bool  `short:"N" long:"no-color" desc:"Disable coloring of output text"`
 		Yes     bool  `short:"y" desc:"assume yes in all yes/no queries"`
 		Verbose bool  `short:"v" long:"verbose" desc:"Detailed output"`
-		Level   int64 `short:"l" arg:"true" long:"level" desc:"Level of something"`
+		Level   level `short:"l" arg:"true" long:"level" desc:"Level of something"`
 	}{}
 
 	// Build Application
@@ -46,4 +49,8 @@ func main() {
 
 	// Run the program
 	r.Run()
+	if flags.Debug {
+		fmt.Println("Debug is on!")
+	}
+	fmt.Printf("Level is %d\n", flags.Level)
 }

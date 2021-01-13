@@ -14,24 +14,19 @@
 // limitations under the License.
 //
 
-package cmd
+package term
 
-import (
-	"fmt"
-)
-
-// Hidden fulfills the "hidden" subcommand
-var Hidden = Sub{
-	Name:   "hidden",
-	Alias:  "hi",
-	Short:  "Hidden command for testing",
-	Hidden: true,
-	Run:    HiddenRun,
+// Reset clears all formatting
+func Reset(inner string) string {
+	return "\033[0m" + inner + "\033[0m"
 }
 
-// HiddenRun prints the usage for the requested command
-func HiddenRun(r *Root, c *Sub) {
-	// Get the arguments
-	// args := c.Args.(*HiddenArgs).Args
-	fmt.Println("You didn't see me!!!!!!")
+// Resetln clears all formatting and adds a newline
+func Resetln(inner string) string {
+	return "\033[0m" + inner + "\033[0m\n"
+}
+
+// Bold formats text to be printed as bold
+func Bold(inner string) string {
+	return "\033[1m" + inner + "\033[0m"
 }

@@ -30,13 +30,9 @@ var GenManPages = Sub{
 	Name:   "gen-man-pages",
 	Alias:  "gmp",
 	Short:  "Generate man-pages for the root command and each sub-command",
-	Args:   &GenManPagesArgs{},
 	Run:    GenManPagesRun,
 	Hidden: true,
 }
-
-// GenManPagesArgs contains the arguments for the "gen-man-pages" subcommand
-type GenManPagesArgs struct{}
 
 // GenManPagesRun prints the usage for the requested command
 func GenManPagesRun(r *Root, c *Sub) {

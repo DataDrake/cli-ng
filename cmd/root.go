@@ -19,10 +19,12 @@ package cmd
 import (
 	"fmt"
 	"github.com/DataDrake/cli-ng/options"
+	"github.com/DataDrake/cli-ng/term"
 	"os"
 	"reflect"
 	"sort"
 	"strings"
+	"text/tabwriter"
 )
 
 // Root is the main command that supports multiple Sub commands
@@ -31,105 +33,6 @@ type Root struct {
 	Short  string
 	Flags  interface{}
 	Single bool
-}
-
-func generateKeys() (keys []string, maxKey, maxAlias int) {
-	for key, cmd := range subcommands {
-		if cmd.Hidden {
-			continue
-		}
-		keys = append(keys, key)
-		if len(key) > maxKey {
-			maxKey = len(key)
-		}
-		if len(cmd.Alias) > maxAlias {
-			maxAlias = len(cmd.Alias)
-		}
-	}
-	sort.Strings(keys)
-	return
-}
-
-func (r *Root) printSubcommands() {
-	fmt.Printf("COMMANDS:\n\n")
-	keys, maxKey, maxAlias := generateKeys()
-	// Add spacing for ()
-	if r.Single {
-		format := fmt.Sprintf("    %%%ds : %%s\n", maxAlias)
-		for _, k := range keys {
-			fmt.Printf(format, k, subcommands[k].Short)
-		}
-	} else {
-		format := fmt.Sprintf("    %%%ds (%%%ds) : %%s\n", maxKey, maxAlias)
-		for _, k := range keys {
-			fmt.Printf(format, k, subcommands[k].Alias, subcommands[k].Short)
-		}
-	}
-	print("\n")
-}
-
-// Usage prints the usage for this program
-func (r *Root) Usage() {
-	if r.Single {
-		fmt.Printf("NAME: %s\n\n", r.Name)
-	} else {
-		fmt.Printf("USAGE: %s CMD [OPTIONS]\n\n", r.Name)
-	}
-	if len(r.Short) > 0 {
-		fmt.Printf("DESCRIPTION: %s\n\n", r.Short)
-	}
-	r.printSubcommands()
-	if r.Flags != nil {
-		fmt.Printf("GLOBAL FLAGS:\n\n")
-		PrintFlags(r.Flags)
-	}
-	os.Exit(1)
-}
-
-// SubUsage prints a general usage statement for a subcommand
-func (r *Root) SubUsage(c *Sub) {
-	// Print the usage line
-	if r.Single {
-		fmt.Printf("USAGE: %s [OPTIONS]", c.Name)
-	} else {
-		fmt.Printf("USAGE: %s %s [OPTIONS]", r.Name, c.Name)
-	}
-	// Print the argument names
-	t := reflect.TypeOf(c.Args).Elem()
-	max := 0
-	for i := 0; i < t.NumField(); i++ {
-		name := t.Field(i).Name
-		if t.Field(i).Type.Kind() == reflect.Slice {
-			fmt.Printf(" [%s1 ... %sN]", name, name)
-		} else {
-			fmt.Printf(" <%s>", name)
-		}
-		if len(name) > max {
-			max = len(name)
-		}
-	}
-	print("\n\n")
-	// Print the description
-	fmt.Printf("DESCRIPTION: %s\n\n", c.Short)
-	// Print the arguments
-	format := fmt.Sprintf("%%%ds : %%s\n", max+4)
-	if t.NumField() > 0 {
-		fmt.Printf("ARGUMENTS:\n\n")
-		for i := 0; i < t.NumField(); i++ {
-			fmt.Printf(format, t.Field(i).Name, t.Field(i).Tag.Get("desc"))
-		}
-		print("\n")
-	}
-	// Print global flags
-	if c.Flags != nil {
-		fmt.Printf("%s FLAGS:\n\n", strings.ToUpper(c.Name))
-		PrintFlags(c.Flags)
-	}
-	// Print global flags
-	if r.Flags != nil {
-		fmt.Printf("GLOBAL FLAGS:\n\n")
-		PrintFlags(r.Flags)
-	}
 }
 
 // Run finds the appropriate CMD and executes it, or prints the global Usage
@@ -163,4 +66,101 @@ func (r *Root) Run() {
 		os.Exit(1)
 	}
 	c.Run(r, c)
+}
+
+// Usage prints the usage for this program
+func (r *Root) Usage() {
+	if r.Single {
+		fmt.Printf(term.Bold("NAME:")+" %s\n\n", r.Name)
+	} else {
+		fmt.Printf(term.Bold("USAGE:")+" %s CMD [OPTIONS]\n\n", r.Name)
+	}
+	if len(r.Short) > 0 {
+		fmt.Printf(term.Bold("DESCRIPTION:")+" %s\n\n", r.Short)
+	}
+	r.printSubcommands()
+	if r.Flags != nil {
+		fmt.Printf(term.Bold("GLOBAL FLAGS:\n\n"))
+		PrintFlags(r.Flags)
+	}
+	os.Exit(1)
+}
+
+func (r *Root) printSubcommands() {
+	fmt.Printf(term.Bold("COMMANDS:\n\n"))
+	keys := generateKeys()
+	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	if r.Single {
+		fmt.Fprintln(tw, term.Bold("    NAME\tDESCRIPTION"))
+		for _, k := range keys {
+			fmt.Fprintf(tw, term.Resetln("    %s\t%s"), k, subcommands[k].Short)
+		}
+	} else {
+		fmt.Fprintln(tw, term.Bold("    NAME\tALIAS\tDESCRIPTION"))
+		for _, k := range keys {
+			fmt.Fprintf(tw, term.Resetln("    %s\t%s\t%s"), k, subcommands[k].Alias, subcommands[k].Short)
+		}
+	}
+	tw.Flush()
+	fmt.Println()
+}
+
+func generateKeys() (keys []string) {
+	for key, cmd := range subcommands {
+		if cmd.Hidden {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return
+}
+
+// SubUsage prints a general usage statement for a subcommand
+func (r *Root) SubUsage(c *Sub) {
+	// Print the usage line
+	if r.Single {
+		fmt.Printf(term.Bold("USAGE:")+" %s [OPTIONS]", c.Name)
+	} else {
+		fmt.Printf(term.Bold("USAGE:")+" %s %s [OPTIONS]", r.Name, c.Name)
+	}
+	// Print the argument names
+	if v := reflect.ValueOf(c.Args); v.IsValid() && !v.IsZero() {
+		t := v.Elem().Type()
+		for i := 0; i < t.NumField(); i++ {
+			name := t.Field(i).Name
+			if t.Field(i).Type.Kind() == reflect.Slice {
+				fmt.Printf(" [%s1 ... %sN]", name, name)
+			} else {
+				fmt.Printf(" <%s>", name)
+			}
+		}
+	}
+	print("\n\n")
+	// Print the description
+	fmt.Printf(term.Bold("DESCRIPTION:")+" %s\n\n", c.Short)
+	// Print the arguments
+	if v := reflect.ValueOf(c.Args); v.IsValid() && !v.IsZero() {
+		t := v.Elem().Type()
+		if t.NumField() > 0 {
+			fmt.Printf(term.Bold("ARGUMENTS:\n\n"))
+			tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(tw, term.Bold("    NAME\tDESCRIPTION"))
+			for i := 0; i < t.NumField(); i++ {
+				fmt.Fprintf(tw, term.Resetln("    %s\t%s"), t.Field(i).Name, t.Field(i).Tag.Get("desc"))
+			}
+			tw.Flush()
+			fmt.Println()
+		}
+	}
+	// Print global flags
+	if c.Flags != nil {
+		fmt.Printf(term.Bold("%s FLAGS:\n\n"), strings.ToUpper(c.Name))
+		PrintFlags(c.Flags)
+	}
+	// Print global flags
+	if r.Flags != nil {
+		fmt.Printf(term.Bold("GLOBAL FLAGS:\n\n"))
+		PrintFlags(r.Flags)
+	}
 }
