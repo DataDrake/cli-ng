@@ -15,3 +15,4 @@
  - [x] Consider allowing an empty slice argument, requires StructTag (yes)
  - [x] Add flag to suppress man page for a sub-command
  - [x] Add sub-command for creating symlinks for Single binaries
+ - [x] GenManPages safely handles empty `interface{}` and now prints types of flags when not bool

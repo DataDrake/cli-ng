@@ -93,6 +93,9 @@ func (p *Parser) verifyArgs(args interface{}) (out interface{}, err error) {
 	if v := reflect.ValueOf(args); v.IsValid() && !v.IsZero() {
 		p.maxArgs = v.Elem().NumField()
 		p.minArgs = p.maxArgs
+		if p.maxArgs == 0 {
+			return
+		}
 		if last := v.Elem().Type().Field(p.maxArgs - 1); last.Type.Kind() == reflect.Slice {
 			if last.Tag.Get("zero") != "" {
 				p.minArgs = p.maxArgs - 1
