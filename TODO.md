@@ -14,3 +14,4 @@
     - This is a bad idea since it would require setting flags twice to parse a sub-command and separate logic for Single binaries
  - [x] Consider allowing an empty slice argument, requires StructTag (yes)
  - [x] Add flag to suppress man page for a sub-command
+ - [x] Add sub-command for creating symlinks for Single binaries
