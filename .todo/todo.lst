@@ -1,0 +1,3 @@
+T:13 C:"2021-01-17T19:57:59-05:00" F:"" P:"cli-ng" L:"bugfix" N:"PrintFlags should handle flags without 'short' names"
+T:14 C:"2021-01-17T19:58:26-05:00" F:"" P:"cli-ng" L:"bugfix" N:"Missing newline after usage line in GenManPages when a command has no args"
+T:15 C:"2021-01-17T19:58:48-05:00" F:"" P:"cli-ng" L:"bugfix" N:"PrintFlags doesn't print string from string types"

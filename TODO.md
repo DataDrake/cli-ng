@@ -1,18 +1,29 @@
 # TODO
 
-## Fixes
- - [x] Switch to `tab/writer` for printing sub-commands, args, and flags
- - [x] Rework flag printing to automatically add types for non-boolean types.
+ - [ ] PrintFlags should handle flags without 'short' names
+ - [ ] Missing newline after usage line in GenManPages when a command has no args
+ - [ ] PrintFlags doesn't print string from string types
+
+# BACKLOG
+
+ - [ ] Add Version field to `cmd.Root`
+ - [ ] Allow slice args to contain things other than strings
+ - [ ] Consider allowing slices for flags, delimited by application-specified delimiter
+ - [ ] Add copyright notice for man pages
+ - [ ] Add version command which also prints copyright notice
+
+# COMPLETED
+
+ - [x] Re-add `nil` checks for flags and args
+ - [x] GenManPages panics on nil `interface{}` value
+ - [x] Switch to `tab/writer` for printing sub-commands, args, flags
+ - [x] Rework flag printing to automatically add types for non-bools
  - [x] Rework manpage generation to be more DRY
- - [x] Allow multiple "short" flags to be specified in a row:
-   ```
-   -xvf vs -x -v -f
-   ```
- - [x] Enforce single-character "short" names
- - [x] Re-add `nil` checks for Flags and Args.
- - [ ] ~Consider allowing flags before the sub-command is specified~
-    - This is a bad idea since it would require setting flags twice to parse a sub-command and separate logic for Single binaries
- - [x] Consider allowing an empty slice argument, requires StructTag (yes)
- - [x] Add flag to suppress man page for a sub-command
- - [x] Add sub-command for creating symlinks for Single binaries
- - [x] GenManPages safely handles empty `interface{}` and now prints types of flags when not bool
+ - [x] Allow multiple short flags in a row (e.g. -tvf)
+ - [x] Enfore single-character 'short' names
+ - [x] add flag to suppress man page for a sub-command
+ - [x] Add sub-command for creating cymlinks for Single binaries
+ - [x] Allow empty slice arguments (sero struct tag)
+ - [x] GenManPages should print type for flags
+ - [x] PrintFlags should print type for flags
+
