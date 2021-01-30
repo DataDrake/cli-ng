@@ -275,6 +275,7 @@ func (p *Parser) setFieldValue(field reflect.Value) error {
 }
 
 func (p *Parser) appendSlice(field reflect.Value) {
-	value := p.raw.Next()
-	field.Set(reflect.Append(field, reflect.ValueOf(value)))
+	elem := reflect.New(field.Type().Elem())
+	p.setFieldValue(elem.Elem())
+	field.Set(reflect.Append(field, elem.Elem()))
 }

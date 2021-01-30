@@ -39,7 +39,7 @@ type ExampleFlags struct {
 
 // ExampleArgs contains the arguments for the "example" subcommand
 type ExampleArgs struct {
-	Args []string `zero:"yes" desc:"Slice o' Args"`
+	Args []uint8 `zero:"yes" desc:"Slice o' Args"`
 }
 
 // ExampleRun prints the usage for the requested command
@@ -58,6 +58,6 @@ func ExampleRun(r *Root, c *Sub) {
 		os.Exit(1)
 	}
 	for _, arg := range args {
-		fmt.Printf("You get a '%s'!!!!!!\n", arg)
+		fmt.Printf("You get a '%d'!!!!!!\n", arg)
 	}
 }

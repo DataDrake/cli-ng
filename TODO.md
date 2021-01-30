@@ -3,7 +3,6 @@
 
 # BACKLOG
 
- - [ ] Allow slice args to contain things other than strings
  - [ ] Consider allowing slices for flags, delimited by application-specified delimiter
 
 # COMPLETED
@@ -26,6 +25,7 @@
  - [x] add flag to suppress man page for a sub-command
  - [x] Add sub-command for creating cymlinks for Single binaries
  - [x] Add Version field to `cmd.Root`
+ - [x] Allow slice args to contain things other than strings
  - [x] Add License to `cmd.Root`
  - [x] Add Copyright to `cmd.Root`
  - [x] Allow empty slice arguments (sero struct tag)
