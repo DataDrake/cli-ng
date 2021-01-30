@@ -137,7 +137,7 @@ func GenerateSubPage(r *Root, name string) error {
 	defer man.Close()
 	sub := subcommands[name]
 	genSubHeader(man, r, sub, name)
-	genSubSynopsis(man, r, name)
+	genSubSynopsis(man, r, sub, name)
 	genSubArgs(man, sub)
 	// Sub Flags
 	genFlags(man, sub.Flags, strings.ToUpper(name)+" FLAGS")
@@ -157,18 +157,28 @@ func genSubHeader(man io.Writer, r *Root, sub *Sub, name string) {
 	fmt.Fprintf(man, "%s \\- %s\n", name, sub.Short)
 }
 
-func genSubSynopsis(man io.Writer, r *Root, name string) {
+func genSubSynopsis(man io.Writer, r *Root, sub *Sub, name string) {
 	fmt.Fprintln(man, ".SH SYNOPSIS")
 	if r.Single {
 		fmt.Fprintf(man, ".B %s\n", name)
 	} else {
 		fmt.Fprintf(man, ".B %s \\fI%s\\fR\n", r.Name, name)
 	}
-	fmt.Fprint(man, "[\\fIOPTIONS...\\fR]")
+	hasFlags := false
+	if v := reflect.ValueOf(r.Flags); v.IsValid() && !v.IsZero() {
+		hasFlags = true
+	}
+	if v := reflect.ValueOf(sub.Flags); v.IsValid() && !v.IsZero() {
+		hasFlags = true
+	}
+	if hasFlags {
+		fmt.Fprint(man, "[\\fIOPTIONS...\\fR]")
+	}
 }
 
 func genSubArgs(man io.Writer, sub *Sub) {
 	if v := reflect.ValueOf(sub.Args); !v.IsValid() || v.IsZero() {
+		fmt.Fprintf(man, "\n\n")
 		return
 	}
 	args := reflect.TypeOf(sub.Args).Elem()
