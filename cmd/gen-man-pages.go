@@ -202,8 +202,15 @@ func genSubArgs(man io.Writer, sub *Sub) {
 			field := args.Field(i)
 			tags := args.Field(i).Tag
 			fmt.Fprintln(man, ".TP")
-			fmt.Fprintf(man, ".B %s\n", strings.ToUpper(field.Name))
-			fmt.Fprintf(man, "%s\n\n", tags.Get("desc"))
+			fmt.Fprintf(man, ".B %s", strings.ToUpper(field.Name))
+			k := field.Type.Kind()
+			switch k {
+			case reflect.Slice:
+				fmt.Fprintf(man, " \\fI[]%s\\fR", strings.ToUpper(field.Type.Elem().Kind().String()))
+			default:
+				fmt.Fprintf(man, " \\fI%s\\fR", strings.ToUpper(k.String()))
+			}
+			fmt.Fprintf(man, " %s\n\n", tags.Get("desc"))
 		}
 	}
 }

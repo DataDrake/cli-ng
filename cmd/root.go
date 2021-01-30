@@ -130,7 +130,7 @@ func (r *Root) SubUsage(c *Sub) {
 		for i := 0; i < t.NumField(); i++ {
 			name := t.Field(i).Name
 			if t.Field(i).Type.Kind() == reflect.Slice {
-				fmt.Printf(" [%s1 ... %sN]", name, name)
+				fmt.Printf(" [%s...]", name)
 			} else {
 				fmt.Printf(" <%s>", name)
 			}
@@ -145,9 +145,19 @@ func (r *Root) SubUsage(c *Sub) {
 		if t.NumField() > 0 {
 			fmt.Printf(term.Bold("ARGUMENTS:\n\n"))
 			tw := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(tw, term.Bold("    NAME\tDESCRIPTION"))
+			fmt.Fprintln(tw, term.Bold("    NAME\tTYPE\tDESCRIPTION"))
 			for i := 0; i < t.NumField(); i++ {
-				fmt.Fprintf(tw, term.Resetln("    %s\t%s"), t.Field(i).Name, t.Field(i).Tag.Get("desc"))
+				field := t.Field(i)
+				k := field.Type.Kind()
+				var kind string
+				switch k {
+				case reflect.Slice:
+					k = field.Type.Elem().Kind()
+					kind = "[]" + strings.ToUpper(k.String())
+				default:
+					kind = strings.ToUpper(k.String())
+				}
+				fmt.Fprintf(tw, term.Resetln("    %s\t%s\t%s"), field.Name, kind, field.Tag.Get("desc"))
 			}
 			tw.Flush()
 			fmt.Println()

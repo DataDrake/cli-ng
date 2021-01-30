@@ -68,7 +68,7 @@ func printFlag(tw io.Writer, f reflect.StructField, args bool) {
 
 func hasArgs(t reflect.Type) bool {
 	for i := 0; i < t.NumField(); i++ {
-		if arg(t.Field(i)) != "" {
+		if t.Field(i).Type.Kind() != reflect.Bool {
 			return true
 		}
 	}
@@ -76,8 +76,11 @@ func hasArgs(t reflect.Type) bool {
 }
 
 func arg(f reflect.StructField) string {
-	if f.Tag.Get("arg") != "" {
-		return f.Type.Kind().String()
+	k := f.Type.Kind()
+	switch k {
+	case reflect.Bool, reflect.Slice:
+		return ""
+	default:
+		return k.String()
 	}
-	return ""
 }

@@ -1,6 +1,5 @@
 # TODO
 
- - [ ] PrintFlags doesn't print string from string types
 
 # BACKLOG
 
@@ -16,7 +15,9 @@
  - [x] GenManPages panics on nil `interface{}` value
  - [x] PrintFlags should handle flags without 'short' names
  - [x] Missing newline after usage line in GenManPages when a command has no args
+ - [x] PrintFlags doesn't print string from string types
  - [x] [Options...] is printed for sub-commands without options in GenManPages
+ - [x] Usage doesn't print Arg types
  - [x] Switch to `tab/writer` for printing sub-commands, args, flags
  - [x] Rework flag printing to automatically add types for non-bools
  - [x] Rework manpage generation to be more DRY
