@@ -1,5 +1,2 @@
-T:18 C:"2021-01-17T19:59:53-05:00" F:"" P:"cli-ng" L:"core" N:"Add Version field to `cmd.Root`"
 T:19 C:"2021-01-17T20:00:17-05:00" F:"" P:"cli-ng" L:"core" N:"Allow slice args to contain things other than strings"
 T:20 C:"2021-01-17T20:01:02-05:00" F:"" P:"cli-ng" L:"core" N:"Consider allowing slices for flags, delimited by application-specified delimiter"
-T:16 C:"2021-01-17T19:59:12-05:00" F:"" P:"cli-ng" L:"feature" N:"Add copyright notice for man pages"
-T:17 C:"2021-01-17T19:59:27-05:00" F:"" P:"cli-ng" L:"feature" N:"Add version command which also prints copyright notice"

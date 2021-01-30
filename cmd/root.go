@@ -29,10 +29,13 @@ import (
 
 // Root is the main command that supports multiple Sub commands
 type Root struct {
-	Name   string
-	Short  string
-	Flags  interface{}
-	Single bool
+	Name      string
+	Short     string
+	Flags     interface{}
+	Single    bool
+    Version   string
+    Copyright string
+    License   string
 }
 
 // Run finds the appropriate CMD and executes it, or prints the global Usage
