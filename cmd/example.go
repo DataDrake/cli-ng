@@ -34,6 +34,7 @@ var Example = Sub{
 // ExampleFlags contains the additional flags for the "example" subcommand
 type ExampleFlags struct {
 	Boop bool `short:"b" long:"boop" desc:"You saw nothing"`
+	Bop  bool `long:"bop" desc:"Ouch!"`
 }
 
 // ExampleArgs contains the arguments for the "example" subcommand
@@ -48,6 +49,9 @@ func ExampleRun(r *Root, c *Sub) {
 	flags := c.Flags.(*ExampleFlags)
 	if flags.Boop {
 		fmt.Println("You got booped!!!")
+	}
+	if flags.Bop {
+		fmt.Println("Stop hitting yourself!!!")
 	}
 	if len(args) == 0 {
 		fmt.Println("You get nothing!!!")

@@ -47,12 +47,18 @@ func PrintFlags(flags interface{}) {
 }
 
 func printFlag(tw io.Writer, f reflect.StructField, args bool) {
+	var name string
 	short := f.Tag.Get("short")
-	desc := f.Tag.Get("desc")
-	name := "-" + short
-	if long := f.Tag.Get("long"); long != "" {
-		name += ", --" + long
+	if short != "" {
+		name = "-" + short
 	}
+	if long := f.Tag.Get("long"); long != "" {
+		if short != "" {
+			name += ", "
+		}
+		name += "--" + long
+	}
+	desc := f.Tag.Get("desc")
 	if args {
 		fmt.Fprintf(tw, term.Resetln("    %s\t%s\t%s"), name, arg(f), desc)
 	} else {

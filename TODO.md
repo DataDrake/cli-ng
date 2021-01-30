@@ -1,6 +1,5 @@
 # TODO
 
- - [ ] PrintFlags should handle flags without 'short' names
  - [ ] Missing newline after usage line in GenManPages when a command has no args
  - [ ] PrintFlags doesn't print string from string types
 
@@ -16,6 +15,7 @@
 
  - [x] Re-add `nil` checks for flags and args
  - [x] GenManPages panics on nil `interface{}` value
+ - [x] PrintFlags should handle flags without 'short' names
  - [x] Switch to `tab/writer` for printing sub-commands, args, flags
  - [x] Rework flag printing to automatically add types for non-bools
  - [x] Rework manpage generation to be more DRY

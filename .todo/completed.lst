@@ -1,5 +1,6 @@
 T:6 C:"2021-01-17T19:54:50-05:00" F:"2021-01-17T20:02:05-05:00" P:"cli-ng" L:"bugfix" N:"Re-add `nil` checks for flags and args"
 T:10 C:"2021-01-17T19:56:59-05:00" F:"2021-01-17T20:02:10-05:00" P:"cli-ng" L:"bugfix" N:"GenManPages panics on nil `interface{}` value"
+T:13 C:"2021-01-17T19:57:59-05:00" F:"2021-01-29T20:23:51-05:00" P:"cli-ng" L:"bugfix" N:"PrintFlags should handle flags without 'short' names"
 T:1 C:"2021-01-17T19:52:35-05:00" F:"2021-01-17T20:02:25-05:00" P:"cli-ng" L:"core" N:"Switch to `tab/writer` for printing sub-commands, args, flags"
 T:2 C:"2021-01-17T19:53:22-05:00" F:"2021-01-17T20:02:29-05:00" P:"cli-ng" L:"core" N:"Rework flag printing to automatically add types for non-bools"
 T:3 C:"2021-01-17T19:53:41-05:00" F:"2021-01-17T20:02:32-05:00" P:"cli-ng" L:"core" N:"Rework manpage generation to be more DRY"
