@@ -18,33 +18,33 @@ package cmd
 
 import (
 	"fmt"
-    "github.com/DataDrake/cli-ng/term"
-    "strings"
+	"github.com/DataDrake/cli-ng/term"
+	"strings"
 )
 
 // Version fulfills the "hidden" subcommand
 var Version = Sub{
 	Name:    "version",
 	Short:   "Print the version of this command",
-    SkipMan: true,
+	SkipMan: true,
 	Run:     VersionRun,
 }
 
 // VersionRun prints the version and optional copyright for a command
 func VersionRun(r *Root, c *Sub) {
 	fmt.Printf("%s %s\n", r.Name, r.Version)
-    if len(r.Copyright) > 0 {
-        if strings.Contains(r.Copyright, "\n") {
-            fmt.Printf(term.Bold("\nCOPYRIGHT:") + "\n\n%s\n", r.Copyright)
-        } else {
-            fmt.Printf(term.Bold("\nCOPYRIGHT:") + "\n    %s\n", r.Copyright)
-        }
-    }
-    if len(r.License) > 0 {
-        if strings.Contains(r.License, "\n") {
-            fmt.Printf(term.Bold("\nLICENSE:") + "\n\n%s\n", r.License)
-        } else {
-            fmt.Printf(term.Bold("\nLICENSE:") + "\n    %s\n", r.License)
-        }
-    }
+	if len(r.Copyright) > 0 {
+		if strings.Contains(r.Copyright, "\n") {
+			fmt.Printf(term.Bold("\nCOPYRIGHT:")+"\n\n%s\n", r.Copyright)
+		} else {
+			fmt.Printf(term.Bold("\nCOPYRIGHT:")+"\n    %s\n", r.Copyright)
+		}
+	}
+	if len(r.License) > 0 {
+		if strings.Contains(r.License, "\n") {
+			fmt.Printf(term.Bold("\nLICENSE:")+"\n\n%s\n", r.License)
+		} else {
+			fmt.Printf(term.Bold("\nLICENSE:")+"\n    %s\n", r.License)
+		}
+	}
 }

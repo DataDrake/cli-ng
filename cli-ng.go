@@ -42,12 +42,12 @@ func main() {
 
 	// Build Application
 	r := &cmd.Root{
-		Name:  "cli-ng",
-		Short: "An easy to use CLI library for the Go language",
-		Flags: &flags,
-        Version: "2.0.0",
-        Copyright: "© 2017-2021 Bryan T. Meyers <root@datadrake.com>",
-        License: license,
+		Name:      "cli-ng",
+		Short:     "An easy to use CLI library for the Go language",
+		Flags:     &flags,
+		Version:   "2.0.0",
+		Copyright: "© 2017-2021 Bryan T. Meyers <root@datadrake.com>",
+		License:   license,
 	}
 
 	// Setup the Sub-Commands

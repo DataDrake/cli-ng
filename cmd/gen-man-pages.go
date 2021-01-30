@@ -57,7 +57,7 @@ func GenerateRootPage(r *Root) error {
 	genRootSubcommands(man, r)
 	// Global Flags
 	genFlags(man, r.Flags, "GLOBAL FLAGS")
-    genFooter(man, r)
+	genFooter(man, r)
 	return nil
 }
 
@@ -144,7 +144,7 @@ func GenerateSubPage(r *Root, name string) error {
 	genFlags(man, sub.Flags, strings.ToUpper(name)+" FLAGS")
 	// Global Flags
 	genFlags(man, r.Flags, "GLOBAL FLAGS")
-    genFooter(man, r)
+	genFooter(man, r)
 	return nil
 }
 
@@ -254,12 +254,12 @@ func genFlag(man io.Writer, field reflect.StructField) {
 }
 
 func genFooter(man io.Writer, r *Root) {
-    if len(r.Copyright) > 0 {
-	    fmt.Fprintln(man, ".SH COPYRIGHT")
-    	fmt.Fprintf(man, "%s\n", r.Copyright)
-    }
-    if len(r.License) > 0 {
-	    fmt.Fprintln(man, ".SH LICENSE")
-    	fmt.Fprintf(man, "%s\n", r.License)
-    }
+	if len(r.Copyright) > 0 {
+		fmt.Fprintln(man, ".SH COPYRIGHT")
+		fmt.Fprintf(man, "%s\n", r.Copyright)
+	}
+	if len(r.License) > 0 {
+		fmt.Fprintln(man, ".SH LICENSE")
+		fmt.Fprintf(man, "%s\n", r.License)
+	}
 }

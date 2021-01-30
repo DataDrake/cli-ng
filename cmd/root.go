@@ -33,9 +33,9 @@ type Root struct {
 	Short     string
 	Flags     interface{}
 	Single    bool
-    Version   string
-    Copyright string
-    License   string
+	Version   string
+	Copyright string
+	License   string
 }
 
 // Run finds the appropriate CMD and executes it, or prints the global Usage
