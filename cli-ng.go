@@ -61,6 +61,6 @@ func main() {
 	r.Run()
 	if flags.Debug {
 		fmt.Println("Debug is on!")
-	}
-	fmt.Printf("Level is %d\n", flags.Level)
+    	fmt.Printf("Level is %d\n", flags.Level)
+   	}
 }

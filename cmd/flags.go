@@ -22,6 +22,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"strings"
 	"text/tabwriter"
 )
 
@@ -81,6 +82,6 @@ func arg(f reflect.StructField) string {
 	case reflect.Bool, reflect.Slice:
 		return ""
 	default:
-		return k.String()
+		return strings.ToUpper(k.String())
 	}
 }
