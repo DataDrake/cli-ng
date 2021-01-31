@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/DataDrake/cli-ng/term"
+	"github.com/DataDrake/cli-ng/v2/term"
 	"io"
 	"os"
 	"reflect"

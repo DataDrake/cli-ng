@@ -18,8 +18,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/DataDrake/cli-ng/options"
-	"github.com/DataDrake/cli-ng/term"
+	"github.com/DataDrake/cli-ng/v2/options"
+	"github.com/DataDrake/cli-ng/v2/term"
 	"os"
 	"reflect"
 	"sort"
