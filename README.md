@@ -139,7 +139,7 @@ THe `version` sub-command prints out the name and version of the program, follow
 
 ## Projects Using cli-ng
 
-- github.com/alecbcs/lookout/cli
+- github.com/alecbcs/lookout
 - github.com/arkenproject/ait
 - github.com/DataDrake/cuppa
 - github.com/DataDrake/go-base (Single Binary)
