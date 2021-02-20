@@ -126,7 +126,7 @@ func (p *Parser) parseLongFlag(rFlags, cFlags interface{}) error {
 	if len(name) == 0 {
 		return ErrMissingFlagName
 	}
-	return p.setAnyFlag(rFlags, cFlags, name, "long", false)
+	return p.setAnyFlag(rFlags, cFlags, name, "long", true)
 }
 
 func (p *Parser) parseShortFlags(rFlags, cFlags interface{}) error {
